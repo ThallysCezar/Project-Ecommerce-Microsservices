@@ -1,0 +1,62 @@
+package br.com.thallysprojetos.ms_pagamentos.controllers;
+
+import br.com.thallysprojetos.ms_pagamentos.dtos.PagamentoDTO;
+import br.com.thallysprojetos.ms_pagamentos.services.PagamentoService;
+import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/pagamentos")
+@AllArgsConstructor
+public class PagamentoController {
+
+    private final PagamentoService service;
+
+    @GetMapping
+    public ResponseEntity<Page<PagamentoDTO>> findAll(@PageableDefault(size = 10) Pageable page) {
+        return ResponseEntity.ok().body(service.findAll(page));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<PagamentoDTO> findPagamentoById(@Valid @PathVariable Long id) {
+        return ResponseEntity.ok().body(service.findById(id));
+    }
+
+    @GetMapping("/pedido/{idPedido}")
+    public ResponseEntity<PagamentoDTO> findPagamentoByPedido(@Valid @PathVariable Long idPedido) {
+        PagamentoDTO pagamento = service.findByPedidoId(idPedido);
+        return ResponseEntity.ok().body(pagamento);
+    }
+
+    // NOVO ENDPOINT PARA CRIAÇÃO DE PAGAMENTOS
+    @PostMapping
+    public ResponseEntity<PagamentoDTO> createPayment(@RequestBody @Valid PagamentoDTO dto) {
+        PagamentoDTO pagamentoCriado = service.createPayment(dto);
+        // Opcional: retornar a URL para o novo recurso
+        return new ResponseEntity<>(pagamentoCriado, HttpStatus.CREATED);
+    }
+
+    @PutMapping("/update/{id}")
+    public ResponseEntity<PagamentoDTO> updatePagamento(@Valid @PathVariable Long id, @RequestBody PagamentoDTO dto) {
+        service.updatePagamento(id, dto);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{id}/confirmar")
+    public void confirmarPagamento(@PathVariable Long id) {
+        service.processarPagamento(id);
+    }
+
+    @DeleteMapping("/delete/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deletePagamento(@Valid @PathVariable Long id) {
+        service.deletePagamento(id);
+    }
+
+}
