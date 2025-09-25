@@ -1,4 +1,4 @@
-package br.com.thallysprojetos.ms_pedidos.utils;
+package br.com.thallysprojetos.ms_pagamentos.utils;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;

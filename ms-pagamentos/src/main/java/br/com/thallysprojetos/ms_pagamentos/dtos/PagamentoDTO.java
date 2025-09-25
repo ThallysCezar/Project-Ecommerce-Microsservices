@@ -1,8 +1,8 @@
 package br.com.thallysprojetos.ms_pagamentos.dtos;
 
-import br.com.thallysprojetos.ms_pagamentos.models.enums.StatusPagamento;
-import br.com.thallysprojetos.ms_pagamentos.models.enums.TipoFormaPagamento;
-import br.com.thallysprojetos.ms_pedidos.utils.ValidacaoPagamento;
+import br.com.thallysprojetos.ms_pagamentos.dtos.enums.StatusPagamento;
+import br.com.thallysprojetos.ms_pagamentos.dtos.enums.TipoFormaPagamento;
+import br.com.thallysprojetos.ms_pagamentos.utils.ValidacaoPagamento;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 

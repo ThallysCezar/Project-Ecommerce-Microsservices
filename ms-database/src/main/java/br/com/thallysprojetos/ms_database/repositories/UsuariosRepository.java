@@ -1,6 +1,6 @@
 package br.com.thallysprojetos.ms_database.repositories;
 
-import br.com.thallysprojetos.ms_usuarios.models.Usuarios;
+import br.com.thallysprojetos.ms_database.entities.Usuarios;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

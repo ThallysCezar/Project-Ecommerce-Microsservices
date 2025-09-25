@@ -1,9 +1,9 @@
-package br.com.thallysprojetos.ms_pedidos.utils;
+package br.com.thallysprojetos.ms_pagamentos.utils;
 
-import br.com.thallysprojetos.ecommerce.dtos.PagamentoDTO;
+import br.com.thallysprojetos.ms_pagamentos.dtos.PagamentoDTO;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import org.flywaydb.core.internal.util.StringUtils;
+import org.springframework.util.StringUtils;
 
 public class PagamentoValidator implements ConstraintValidator<ValidacaoPagamento, PagamentoDTO> {
 

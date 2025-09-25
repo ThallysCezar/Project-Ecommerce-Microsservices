@@ -1,7 +1,6 @@
 package br.com.thallysprojetos.ms_pedidos.dtos;
 
-
-import br.com.thallysprojetos.ms_pedidos.models.enums.StatusPedidos;
+import br.com.thallysprojetos.ms_pedidos.dtos.enums.StatusPedidos;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,6 +20,6 @@ public class PedidosDTO {
     private StatusPedidos statusPedidos;
     private List<ItemDoPedidoDTO> itens;
     private UsuarioIdDTO usuario;
-//    private PagamentoDTO pagamento;
+    private Long pagamentoId;
 
 }

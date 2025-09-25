@@ -1,6 +1,6 @@
 package br.com.thallysprojetos.ms_database.repositories;
 
-import br.com.thallysprojetos.ms_pagamentos.models.Pagamento;
+import br.com.thallysprojetos.ms_database.entities.Pagamento;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

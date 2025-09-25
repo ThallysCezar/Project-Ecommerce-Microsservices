@@ -4,16 +4,11 @@ import br.com.thallysprojetos.ms_pedidos.configs.https.DatabaseClient;
 import br.com.thallysprojetos.ms_pedidos.configs.https.PagamentosClient;
 import br.com.thallysprojetos.ms_pedidos.configs.https.ProdutosClient;
 import br.com.thallysprojetos.ms_pedidos.configs.https.UsuariosClient;
-import br.com.thallysprojetos.ms_pedidos.dtos.ItemDoPedidoDTO;
 import br.com.thallysprojetos.ms_pedidos.dtos.PedidosDTO;
+import br.com.thallysprojetos.ms_pedidos.dtos.enums.StatusPagamento;
+import br.com.thallysprojetos.ms_pedidos.dtos.enums.StatusPedidos;
 import br.com.thallysprojetos.ms_pedidos.dtos.pagamentos.PagamentoDTO;
 import br.com.thallysprojetos.ms_pedidos.exceptions.usuarios.PedidosNotFoundException;
-import br.com.thallysprojetos.ms_pedidos.models.ItemDoPedido;
-import br.com.thallysprojetos.ms_pedidos.models.Pedidos;
-import br.com.thallysprojetos.ms_pedidos.models.enums.StatusPagamento;
-import br.com.thallysprojetos.ms_pedidos.models.enums.StatusPedidos;
-import br.com.thallysprojetos.ms_pedidos.repositories.PedidosRepository;
-import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
@@ -21,34 +16,32 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
 public class PedidosService {
 
-    private final PedidosRepository pedidosRepository;
+    //    private final PedidosRepository pedidosRepository;
     private final UsuariosClient usuariosClient;
     private final ProdutosClient produtosClient;
-    private final PagamentosClient pagamentoClient;
+    private final PagamentosClient pagamentosClient;
     private final DatabaseClient databaseClient;
     private final ModelMapper modelMapper;
 
     public Page<PedidosDTO> findAll(Pageable page) {
-        return pedidosRepository.findAll(page).map(p -> modelMapper.map(p, PedidosDTO.class));
+        return databaseClient.findAll(page).map(p -> modelMapper.map(p, PedidosDTO.class));
     }
 
     public PedidosDTO findById(Long id) {
-        return pedidosRepository.findById(id)
+        return databaseClient.findById(id)
                 .map(p -> modelMapper.map(p, PedidosDTO.class))
                 .orElseThrow(PedidosNotFoundException::new);
     }
 
     public List<PedidosDTO> findByUserId(Long id) {
-        List<Pedidos> pedidos = pedidosRepository.findByUsuarioId(id);
+        List<PedidosDTO> pedidos = databaseClient.findByUsuarioId(id);
         if (pedidos.isEmpty()) {
             throw new PedidosNotFoundException("Nenhum pedido encontrado para o usuário fornecido.");
         }
@@ -57,112 +50,85 @@ public class PedidosService {
                 .collect(Collectors.toList());
     }
 
-    @Transactional
     public PedidosDTO createPedido(PedidosDTO dto) {
-        usuariosClient.findById(dto.getUsuario().getId());
+        if (dto.getUsuario() != null && dto.getUsuario().getId() != null) {
+            usuariosClient.findById(dto.getUsuario().getId());
+        } else {
+            throw new RuntimeException("Usuário não fornecido.");
+        }
 
-        Pedidos novoPedido = modelMapper.map(dto, Pedidos.class);
-        novoPedido.setUsuarioId(dto.getUsuario().getId());
-        novoPedido.setStatusPedidos(StatusPedidos.CRIADO);
-        novoPedido.setDataHora(LocalDateTime.now());
-
-        if (novoPedido.getItens() != null) {
-            novoPedido.getItens().forEach(item -> {
-                item.setProdutoId(produtosClient.findById(item.getProdutoId()).getId());
-                item.setPedido(novoPedido);
+        if (dto.getItens() != null) {
+            dto.getItens().forEach(item -> {
+                produtosClient.findById(item.getProduto().getId());
             });
         }
 
-        Pedidos pedidoSalvo = pedidosRepository.save(novoPedido);
-        return modelMapper.map(pedidoSalvo, PedidosDTO.class);
+        dto.setDataHora(LocalDateTime.now());
+        dto.setStatusPedidos(StatusPedidos.CRIADO);
+
+        return databaseClient.createPedido(dto);
     }
 
-    @Transactional
     public void processarPagamentoDoPedido(Long idPedido, PagamentoDTO pagamentoDto) {
-        Pedidos pedido = pedidosRepository.findById(idPedido)
+        PedidosDTO pedido = databaseClient.findById(idPedido)
                 .orElseThrow(() -> new PedidosNotFoundException("Pedido não encontrado."));
 
-        PagamentoDTO pagamentoCriado = pagamentoClient.createPayment(pagamentoDto);
+        pagamentoDto.setPedidoId(idPedido);
+        PagamentoDTO pagamentoCriado = pagamentosClient.createPayment(pagamentoDto);
 
         pedido.setPagamentoId(pagamentoCriado.getId());
         pedido.setStatusPedidos(StatusPedidos.AGUARDANDO_CONFIRMACAO);
-        pedidosRepository.save(pedido);
+        databaseClient.updatePedido(idPedido, pedido);
     }
 
-    @Transactional
     public PedidosDTO updatePedidos(Long id, PedidosDTO dto) {
-        Pedidos pedidoExistente = pedidosRepository.findById(id)
+        PedidosDTO pedidoExistente = databaseClient.findById(id)
                 .orElseThrow(() -> new PedidosNotFoundException("Pedido não encontrado com o ID: " + id));
 
         if (dto.getStatusPedidos() != null) {
             pedidoExistente.setStatusPedidos(dto.getStatusPedidos());
         }
 
-        if (dto.getItens() != null) {
-            sincronizarItensDoPedido(pedidoExistente, dto.getItens());
-        }
+        // A lógica de sincronização de itens deve ser movida para cá se for necessária
+        // para o update de PedidosDTO.
 
-        Pedidos pedidoAtualizado = pedidosRepository.save(pedidoExistente);
-        return modelMapper.map(pedidoAtualizado, PedidosDTO.class);
+        return databaseClient.updatePedido(id, pedidoExistente);
     }
 
-    @Transactional
     public void deletePedidos(Long id) {
-        if (!pedidosRepository.existsById(id)) {
+        if (!databaseClient.existsById(id)) {
             throw new PedidosNotFoundException(String.format("Pedidos não encontrado com o id '%s'.", id));
         }
-        pedidosRepository.deleteById(id);
+        databaseClient.deletePedido(id);
     }
 
     public void confirmarPedidos(Long id) {
-        Pedidos pedido = pedidosRepository.findById(id)
+        PedidosDTO pedido = databaseClient.findById(id)
                 .orElseThrow(() -> new PedidosNotFoundException("Pedido não encontrado"));
 
-        PagamentoDTO pagamento = pagamentoClient.findByPedidoId(id);
+        if (pedido.getPagamentoId() == null) {
+            throw new PedidosNotFoundException("O pedido ainda não tem um pagamento associado.");
+        }
+
+        PagamentoDTO pagamento = pagamentosClient.findByPedidoId(pedido.getPagamentoId());
 
         if (pagamento.getStatus() == StatusPagamento.CONFIRMADO) {
             pedido.setStatusPedidos(StatusPedidos.PAGO);
         } else {
             pedido.setStatusPedidos(StatusPedidos.AGUARDANDO_CONFIRMACAO);
         }
-        pedidosRepository.save(pedido);
+
+        databaseClient.updatePedido(id, pedido);
     }
 
     public void cancelarPedido(Long id) {
-        Pedidos pedido = pedidosRepository.findById(id)
+        PedidosDTO pedido = databaseClient.findById(id)
                 .orElseThrow(() -> new PedidosNotFoundException("Pedido não encontrado"));
 
         pedido.setStatusPedidos(StatusPedidos.CANCELADO);
-        pedidosRepository.save(pedido);
+        databaseClient.updatePedido(id, pedido);
     }
 
-    private void sincronizarItensDoPedido(Pedidos pedidoExistente, List<ItemDoPedidoDTO> itensDto) {
-        Map<Long, ItemDoPedido> itensExistentesMap = pedidoExistente.getItens().stream()
-                .collect(Collectors.toMap(ItemDoPedido::getId, item -> item));
-
-        Map<Long, ItemDoPedido> itensParaManter = new HashMap<>();
-
-        for (ItemDoPedidoDTO itemDto : itensDto) {
-            if (itemDto.getId() != null && itensExistentesMap.containsKey(itemDto.getId())) {
-                ItemDoPedido itemParaAtualizar = itensExistentesMap.get(itemDto.getId());
-                itemParaAtualizar.setQuantidade(itemDto.getQuantidade());
-                itemParaAtualizar.setDescricao(itemDto.getDescricao());
-
-                // A referência ao produto não muda, então não precisa ser buscada novamente
-                itemParaAtualizar.setProdutoId(itemDto.getProduto().getId());
-
-                itensParaManter.put(itemParaAtualizar.getId(), itemParaAtualizar);
-            } else if (itemDto.getId() == null) {
-                produtosClient.findById(itemDto.getProduto().getId());
-
-                ItemDoPedido novoItem = modelMapper.map(itemDto, ItemDoPedido.class);
-                novoItem.setProdutoId(itemDto.getProduto().getId());
-                novoItem.setPedido(pedidoExistente);
-
-                pedidoExistente.getItens().add(novoItem);
-            }
-        }
-        pedidoExistente.getItens().removeIf(item -> !itensParaManter.containsKey(item.getId()));
-    }
-
+    // A lógica de sincronização de itens deve ser ajustada para o novo contexto de DTOs.
+    // Ela não pode mais trabalhar com entidades.
 }

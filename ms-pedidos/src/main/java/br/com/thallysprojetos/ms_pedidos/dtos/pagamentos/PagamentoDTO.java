@@ -1,7 +1,7 @@
 package br.com.thallysprojetos.ms_pedidos.dtos.pagamentos;
 
-import br.com.thallysprojetos.ms_pedidos.models.enums.StatusPagamento;
-import br.com.thallysprojetos.ms_pedidos.models.enums.TipoFormaPagamento;
+import br.com.thallysprojetos.ms_pedidos.dtos.enums.StatusPagamento;
+import br.com.thallysprojetos.ms_pedidos.dtos.enums.TipoFormaPagamento;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -32,5 +32,8 @@ public class PagamentoDTO {
     private String codigoDeBarrasBoleto;
 
     private String chavePix;
+
+    private Long pedidoId;
+    private Long pagamentoId;
 
 }

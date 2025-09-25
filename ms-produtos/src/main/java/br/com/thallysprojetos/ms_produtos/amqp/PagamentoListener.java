@@ -1,7 +1,5 @@
 package br.com.thallysprojetos.ms_produtos.amqp;
 
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
 @Component

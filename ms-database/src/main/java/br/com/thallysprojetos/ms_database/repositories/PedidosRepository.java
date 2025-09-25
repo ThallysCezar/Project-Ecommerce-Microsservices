@@ -1,7 +1,6 @@
 package br.com.thallysprojetos.ms_database.repositories;
 
-
-import br.com.thallysprojetos.ms_pedidos.models.Pedidos;
+import br.com.thallysprojetos.ms_database.entities.Pedidos;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

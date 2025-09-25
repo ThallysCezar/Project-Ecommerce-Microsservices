@@ -1,4 +1,4 @@
-package br.com.thallysprojetos.ms_pedidos.models.enums;
+package br.com.thallysprojetos.ms_pedidos.dtos.enums;
 
 public enum StatusPagamento {
 
