@@ -13,17 +13,18 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
+import java.util.List;
 
 @RestController
-@RequestMapping("/pedidos")
+@RequestMapping("/usuarios")
 @AllArgsConstructor
 public class UsuariosController {
 
     private final UsuariosService service;
 
     @GetMapping
-    public ResponseEntity<Page<UsuariosDTO>> findAll(@PageableDefault(size = 10) Pageable page) {
-        return ResponseEntity.ok().body(service.findAll(page));
+    public ResponseEntity<List<UsuariosDTO>> findAll() { // <--- Retorna List<DTO>
+        return ResponseEntity.ok().body(service.findAll());
     }
 
     @GetMapping("/{id}")
