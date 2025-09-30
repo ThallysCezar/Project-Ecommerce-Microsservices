@@ -1,5 +1,6 @@
 package br.com.thallysprojetos.ms_pagamentos;
 
+import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -15,6 +16,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
         DataSourceAutoConfiguration.class, // <-- Exclude the DataSource
         HibernateJpaAutoConfiguration.class // <-- Exclude JPA
 })
+@EnableRabbit
 public class PagamentosApplication {
 
     public static void main(String[] args) {

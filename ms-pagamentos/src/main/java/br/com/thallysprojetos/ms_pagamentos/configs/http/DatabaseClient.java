@@ -2,17 +2,16 @@ package br.com.thallysprojetos.ms_pagamentos.configs.http;
 
 import br.com.thallysprojetos.ms_pagamentos.dtos.PagamentoDTO;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
 @FeignClient(name = "ms-database")
 public interface DatabaseClient {
 
     @GetMapping("/pagamentos")
-    Page<PagamentoDTO> findAll(Pageable page);
+    List<PagamentoDTO> findAll();
 
     @GetMapping("/pagamentos/{id}")
     Optional<PagamentoDTO> findById(@PathVariable("id") Long id);

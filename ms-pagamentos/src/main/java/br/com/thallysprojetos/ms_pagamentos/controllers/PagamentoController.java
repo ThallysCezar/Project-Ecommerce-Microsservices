@@ -11,6 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/pagamentos")
 @AllArgsConstructor
@@ -19,8 +21,8 @@ public class PagamentoController {
     private final PagamentoService service;
 
     @GetMapping
-    public ResponseEntity<Page<PagamentoDTO>> findAll(@PageableDefault(size = 10) Pageable page) {
-        return ResponseEntity.ok().body(service.findAll(page));
+    public ResponseEntity<List<PagamentoDTO>> findAll() {
+        return ResponseEntity.ok().body(service.findAll());
     }
 
     @GetMapping("/{id}")
