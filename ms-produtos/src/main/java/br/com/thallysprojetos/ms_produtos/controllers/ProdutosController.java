@@ -16,15 +16,15 @@ import java.net.URI;
 import java.util.List;
 
 @RestController
-@RequestMapping("/pedidos")
+@RequestMapping("/produtos")
 @AllArgsConstructor
 public class ProdutosController {
 
     private final ProdutosService service;
 
     @GetMapping
-    public ResponseEntity<Page<ProdutosDTO>> findAll(@PageableDefault(size = 10) Pageable page) {
-        return ResponseEntity.ok().body(service.findAll(page));
+    public ResponseEntity<List<ProdutosDTO>> findAll() {
+        return ResponseEntity.ok().body(service.findAll());
     }
 
     @GetMapping("/{id}")

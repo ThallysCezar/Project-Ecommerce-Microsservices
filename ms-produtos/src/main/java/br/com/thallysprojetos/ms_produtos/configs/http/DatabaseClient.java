@@ -6,13 +6,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
 @FeignClient(name = "ms-database")
 public interface DatabaseClient {
 
     @GetMapping("/produtos")
-    Page<ProdutosDTO> findAll(Pageable page);
+    List<ProdutosDTO> findAll();
 
     @GetMapping("/produtos/{id}")
     Optional<ProdutosDTO> findById(@PathVariable("id") Long id);

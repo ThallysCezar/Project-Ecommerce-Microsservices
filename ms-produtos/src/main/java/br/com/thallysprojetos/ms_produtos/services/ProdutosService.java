@@ -19,8 +19,8 @@ public class ProdutosService {
     private final DatabaseClient databaseClient;
     private final ModelMapper modelMapper;
 
-    public Page<ProdutosDTO> findAll(Pageable page) {
-        return databaseClient.findAll(page).map(p -> modelMapper.map(p, ProdutosDTO.class));
+    public List<ProdutosDTO> findAll() {
+        return databaseClient.findAll();
     }
 
     public ProdutosDTO findProductById(Long id) {
