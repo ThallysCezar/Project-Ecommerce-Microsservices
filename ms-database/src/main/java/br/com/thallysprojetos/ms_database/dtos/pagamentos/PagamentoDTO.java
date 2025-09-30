@@ -33,4 +33,6 @@ public class PagamentoDTO {
 
     private String chavePix;
 
+    private Long pedidoId;
+
 }
