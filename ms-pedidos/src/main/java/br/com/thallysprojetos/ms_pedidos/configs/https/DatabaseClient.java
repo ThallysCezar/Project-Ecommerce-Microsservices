@@ -16,7 +16,7 @@ import java.util.Optional;
 public interface DatabaseClient {
 
     @GetMapping("/pedidos")
-    Page<PedidosDTO> findAll(Pageable page);
+    List<PedidosDTO> findAll();
 
     @GetMapping("/pedidos/{id}")
     Optional<PedidosDTO> findById(@PathVariable("id") Long id);

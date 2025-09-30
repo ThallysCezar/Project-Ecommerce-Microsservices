@@ -24,8 +24,8 @@ public class PedidosController {
     private final PedidosService service;
 
     @GetMapping
-    public ResponseEntity<Page<PedidosDTO>> findAll(@PageableDefault(size = 10) Pageable page) {
-        return ResponseEntity.ok().body(service.findAll(page));
+    public ResponseEntity<List<PedidosDTO>> findAll() {
+        return ResponseEntity.ok().body(service.findAll());
     }
 
     @GetMapping("/{id}")

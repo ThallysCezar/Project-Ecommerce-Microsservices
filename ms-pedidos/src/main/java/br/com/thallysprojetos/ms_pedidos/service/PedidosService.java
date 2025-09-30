@@ -30,8 +30,8 @@ public class PedidosService {
     private final DatabaseClient databaseClient;
     private final ModelMapper modelMapper;
 
-    public Page<PedidosDTO> findAll(Pageable page) {
-        return databaseClient.findAll(page).map(p -> modelMapper.map(p, PedidosDTO.class));
+    public List<PedidosDTO> findAll() {
+        return databaseClient.findAll();
     }
 
     public PedidosDTO findById(Long id) {

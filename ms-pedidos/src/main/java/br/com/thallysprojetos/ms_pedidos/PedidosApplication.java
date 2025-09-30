@@ -1,5 +1,6 @@
 package br.com.thallysprojetos.ms_pedidos;
 
+import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -15,6 +16,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 		DataSourceAutoConfiguration.class,
 		HibernateJpaAutoConfiguration.class
 })
+@EnableRabbit
 public class PedidosApplication {
 
 	public static void main(String[] args) {
