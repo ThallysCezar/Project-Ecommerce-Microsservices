@@ -1,6 +1,6 @@
 package br.com.thallysprojetos.ms_pagamentos.utils;
 
-import br.com.thallysprojetos.ms_pagamentos.dtos.PagamentoDTO;
+import br.com.thallysprojetos.common_dtos.pagamento.PagamentoDTO;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import org.springframework.util.StringUtils;

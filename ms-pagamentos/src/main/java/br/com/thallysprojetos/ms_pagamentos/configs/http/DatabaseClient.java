@@ -1,6 +1,6 @@
 package br.com.thallysprojetos.ms_pagamentos.configs.http;
 
-import br.com.thallysprojetos.ms_pagamentos.dtos.PagamentoDTO;
+import br.com.thallysprojetos.common_dtos.pagamento.PagamentoDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,14 +21,14 @@ public interface DatabaseClient {
 
     @GetMapping("/pagamentos/{id}/exists")
     Boolean existsById(@PathVariable("id") Long id);
-
-    @PostMapping("/pagamentos")
-    PagamentoDTO createPagamento(@RequestBody PagamentoDTO dto);
-
-    @PutMapping("/pagamentos/{id}")
-    PagamentoDTO updatePagamento(@PathVariable("id") Long id, @RequestBody PagamentoDTO dto);
-
-    @DeleteMapping("/pagamentos/{id}")
-    void deletePagamento(@PathVariable("id") Long id);
+//
+//    @PostMapping("/pagamentos")
+//    PagamentoDTO createPagamento(@RequestBody PagamentoDTO dto);
+//
+//    @PutMapping("/pagamentos/{id}")
+//    PagamentoDTO updatePagamento(@PathVariable("id") Long id, @RequestBody PagamentoDTO dto);
+//
+//    @DeleteMapping("/pagamentos/{id}")
+//    void deletePagamento(@PathVariable("id") Long id);
 
 }

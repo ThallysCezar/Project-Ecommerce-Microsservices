@@ -1,14 +1,12 @@
 package br.com.thallysprojetos.ms_pagamentos.services;
 
+import br.com.thallysprojetos.common_dtos.pagamento.PagamentoDTO;
+import br.com.thallysprojetos.common_dtos.pagamento.enums.StatusPagamento;
 import br.com.thallysprojetos.ms_pagamentos.configs.http.DatabaseClient;
-import br.com.thallysprojetos.ms_pagamentos.dtos.PagamentoDTO;
-import br.com.thallysprojetos.ms_pagamentos.dtos.enums.StatusPagamento;
 import br.com.thallysprojetos.ms_pagamentos.exceptions.pagamento.PagamentoNotFoundException;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -42,16 +40,16 @@ public class PagamentoService {
 //        return databaseClient.createPagamento(dto);
 //    }
 
-    public PagamentoDTO createPayment(PagamentoDTO dto) {
-        // Define o status inicial no serviço de negócio
-        dto.setStatus(StatusPagamento.CRIADO);
-
-        // Envia o comando de criação para o ms-database (assíncrono)
-        rabbitTemplate.convertAndSend("pagamentos.exchange", "pagamentos.create", dto);
-
-        // Retorna o DTO de entrada (o ID real será gerado de forma assíncrona)
-        return dto;
-    }
+//    public PagamentoDTO createPayment(PagamentoDTO dto) {
+//        // Define o status inicial no serviço de negócio
+//        dto.setStatus(StatusPagamento.CRIADO);
+//
+//        // Envia o comando de criação para o ms-database (assíncrono)
+//        rabbitTemplate.convertAndSend("pagamentos.exchange", "pagamentos.create", dto);
+//
+//        // Retorna o DTO de entrada (o ID real será gerado de forma assíncrona)
+//        return dto;
+//    }
 
 //    public PagamentoDTO updatePagamento(Long id, PagamentoDTO dto) {
 //        PagamentoDTO pagamentoExistente = databaseClient.findById(id)
@@ -65,20 +63,41 @@ public class PagamentoService {
 //    }
 
     public PagamentoDTO updatePagamento(Long id, PagamentoDTO dto) {
-        // 1. Busca o estado atual do pagamento (síncrono)
         PagamentoDTO pagamentoExistente = databaseClient.findById(id)
                 .orElseThrow(() -> new PagamentoNotFoundException("Pagamento não encontrado com o ID: " + id));
 
-        // 2. Aplica as alterações no DTO existente
         if (dto.getValor() != null) {
             pagamentoExistente.setValor(dto.getValor());
         }
+
+        pagamentoExistente.setTipoPagamento(dto.getTipoPagamento());
+        pagamentoExistente.setStatus(dto.getStatus());
+        pagamentoExistente.setNomeTitularCartao(dto.getNomeTitularCartao());
+        pagamentoExistente.setExpiracaoCartao(dto.getExpiracaoCartao());
+        pagamentoExistente.setCodigoCartao(dto.getCodigoCartao());
+        pagamentoExistente.setCodigoDeBarrasBoleto(dto.getCodigoDeBarrasBoleto());
+        pagamentoExistente.setChavePix(dto.getChavePix());
+
+        System.out.println("[USUARIOS] Enviando mensagem de atualização de usuário para RabbitMQ: " +
+                "id=" + pagamentoExistente.getId() +
+                "valor=" + pagamentoExistente.getValor() +
+                ", tipoPagamento=" + pagamentoExistente.getTipoPagamento() +
+                ", status=" + pagamentoExistente.getStatus() +
+                ", nomeTitularCartao=" + pagamentoExistente.getNomeTitularCartao() +
+                ", numeroCartao=" + pagamentoExistente.getNumeroCartao() +
+                ", expiracaoCartao=" + pagamentoExistente.getExpiracaoCartao() +
+                ", codigoCartao=" + pagamentoExistente.getCodigoCartao() +
+                ", codigoDeBarrasBoleto=" + pagamentoExistente.getCodigoDeBarrasBoleto() +
+                ", chavePix=" + pagamentoExistente.getChavePix());
+
         // ... Lógica para atualizar outros campos conforme necessário
-
-        // 3. Envia o comando de atualização para o ms-database (assíncrono)
-        rabbitTemplate.convertAndSend("pagamentos.exchange", "pagamentos.update", pagamentoExistente);
-
-        // Retorna o DTO atualizado
+        try {
+            rabbitTemplate.convertAndSend("pagamentos.exchange", "pagamentos.update", pagamentoExistente);
+            System.out.println("[PAGAMENTO] Enviando comando de atualização de pagamento enviada com sucesso!");
+        } catch (Exception e) {
+            System.out.println("[PAGAMENTO] Erro ao enviar mensagem de atualização para RabbitMQ: " + e.getMessage());
+            throw e;
+        }
         return pagamentoExistente;
     }
 
@@ -90,11 +109,19 @@ public class PagamentoService {
 //    }
 
     public void deletePagamento(Long id) {
-        // A checagem de existência pode ser feita antes, mas para simplicidade,
-        // vamos enviar o comando e deixar o Listener tratar a exceção.
+        if (!databaseClient.existsById(id)) {
+            throw new PagamentoNotFoundException("Pagamento não encontrado com o ID: " + id);
+        }
 
-        // Envia o comando de exclusão (assíncrono)
-        rabbitTemplate.convertAndSend("pagamentos.exchange", "pagamentos.delete", id);
+        System.out.println("[PAGAMENTO] Enviando comando de EXCLUSÃO de pagamento para RabbitMQ: PagamentoID=" + id);
+        try {
+            rabbitTemplate.convertAndSend("pagamentos.exchange", "pagamentos.delete", id);
+            System.out.println("[PAGAMENTO] Mensagem de deleção enviada com sucesso!");
+        } catch (Exception e) {
+            System.out.println("[PAGAMENTO] Erro ao enviar mensagem de deleção para RabbitMQ: " + e.getMessage());
+            throw e;
+        }
+
     }
 
 //    public void processarPagamento(Long id) {
@@ -111,18 +138,16 @@ public class PagamentoService {
 //    }
 
     public void processarPagamento(Long id) {
-        // 1. Busca o estado atual do pagamento (síncrono)
         PagamentoDTO pagamento = databaseClient.findById(id)
                 .orElseThrow(() -> new PagamentoNotFoundException("Pagamento não encontrado com o ID: " + id));
 
-        // 2. Aplica a lógica de transição de status
         if (pagamento.getStatus().equals(StatusPagamento.CRIADO)) {
             pagamento.setStatus(StatusPagamento.CONFIRMADO);
         } else {
             pagamento.setStatus(StatusPagamento.CANCELADO);
         }
 
-        // 3. Envia o DTO atualizado como um comando de atualização (assíncrono)
+        System.out.println("[PAGAMENTO] Enviando comando de PROCESSAMENTO de pagamento para RabbitMQ: PagamentoID=" + pagamento.getId() + ", Status=" + pagamento.getStatus());
         rabbitTemplate.convertAndSend("pagamentos.exchange", "pagamentos.update", pagamento);
     }
 
