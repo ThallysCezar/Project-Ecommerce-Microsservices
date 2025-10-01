@@ -1,18 +1,14 @@
 package br.com.thallysprojetos.ms_produtos.controllers;
 
-import br.com.thallysprojetos.ms_produtos.dtos.ProdutosDTO;
+import br.com.thallysprojetos.common_dtos.produto.ProdutosDTO;
 import br.com.thallysprojetos.ms_produtos.services.ProdutosService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -35,18 +31,16 @@ public class ProdutosController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<ProdutosDTO> createProduct(@Valid @RequestBody ProdutosDTO dto, UriComponentsBuilder uriBuilder) {
-        ProdutosDTO product = service.createProduct(dto);
-        URI endereco = uriBuilder.path("/produtos/{id}").buildAndExpand(product.getId()).toUri();
-
-        return ResponseEntity.created(endereco).body(product);
+    ProdutosDTO product = service.createProduct(dto);
+    return ResponseEntity.accepted().body(product);
     }
 
     @PostMapping("/batch")
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<List<ProdutosDTO>> createProduct(@Valid @RequestBody List<ProdutosDTO> dtos, UriComponentsBuilder uriBuilder) {
         List<ProdutosDTO> produtos = service.createProducts(dtos);
-        URI endereco = uriBuilder.path("/produtos/batch").build().toUri();
-        return ResponseEntity.created(endereco).body(produtos);
+        return ResponseEntity.status(HttpStatus.ACCEPTED)
+            .body(produtos);
     }
 
     @PutMapping("/update/{id}")

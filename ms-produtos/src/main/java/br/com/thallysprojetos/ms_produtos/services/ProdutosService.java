@@ -1,22 +1,21 @@
 package br.com.thallysprojetos.ms_produtos.services;
 
+import br.com.thallysprojetos.common_dtos.produto.ProdutosDTO;
 import br.com.thallysprojetos.ms_produtos.configs.http.DatabaseClient;
-import br.com.thallysprojetos.ms_produtos.dtos.ProdutosDTO;
 import br.com.thallysprojetos.ms_produtos.exceptions.produtos.ProdutosNotFoundException;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
 public class ProdutosService {
 
     private final DatabaseClient databaseClient;
+    private final RabbitTemplate rabbitTemplate;
     private final ModelMapper modelMapper;
 
     public List<ProdutosDTO> findAll() {
@@ -29,35 +28,106 @@ public class ProdutosService {
                 .orElseThrow(ProdutosNotFoundException::new);
     }
 
+//    public ProdutosDTO createProduct(ProdutosDTO dto) {
+//        return databaseClient.createProduto(dto);
+//    }
+
     public ProdutosDTO createProduct(ProdutosDTO dto) {
-        return databaseClient.createProduto(dto);
+        System.out.println("[PRODUTOS] Enviando mensagem de criação de 1 produto para RabbitMQ: " +
+                "id=" + dto.getId() +
+                "titulo=" + dto.getTitulo() +
+                ", tipoProduto=" + dto.getTipoProduto() +
+                ", descricao=" + dto.getDescricao() +
+                ", preco=" + dto.getPreco() +
+                ", itemEstoque=" + dto.isItemEstoque() +
+                ", estoque=" + dto.getEstoque());
+
+        try {
+            rabbitTemplate.convertAndSend("produtos.exchange", "produtos.create", dto);
+            System.out.println("[PRODUTOS] Mensagem enviada com sucesso!");
+        } catch (Exception e) {
+            System.out.println("[PRODUTOS] Erro ao enviar mensagem para RabbitMQ: " + e.getMessage());
+            throw e;
+        }
+        return dto;
     }
+
+//    public List<ProdutosDTO> createProducts(List<ProdutosDTO> dtos) {
+//        return dtos.stream()
+//                .map(databaseClient::createProduto)
+//                .collect(Collectors.toList());
+//    }
 
     public List<ProdutosDTO> createProducts(List<ProdutosDTO> dtos) {
-        return dtos.stream()
-                .map(databaseClient::createProduto)
-                .collect(Collectors.toList());
+        for (ProdutosDTO dto : dtos) {
+            System.out.println("[PRODUTOS] Enviando mensagem de criação de produto para RabbitMQ: " +
+                "id=" + dto.getId() +
+                ", titulo=" + dto.getTitulo() +
+                ", tipoProduto=" + dto.getTipoProduto() +
+                ", descricao=" + dto.getDescricao() +
+                ", preco=" + dto.getPreco() +
+                ", itemEstoque=" + dto.isItemEstoque() +
+                ", estoque=" + dto.getEstoque());
+            try {
+                rabbitTemplate.convertAndSend("produtos.exchange", "produtos.create", dto);
+                System.out.println("[PRODUTOS] Mensagem enviada com sucesso!");
+            } catch (Exception e) {
+                System.out.println("[PRODUTOS] Erro ao enviar mensagem para RabbitMQ: " + e.getMessage());
+                throw e;
+            }
+        }
+        return dtos;
     }
+
+//    public ProdutosDTO updateProdutos(Long id, ProdutosDTO dto) {
+//        ProdutosDTO produtoExistente = databaseClient.findById(id)
+//                .orElseThrow(() -> new ProdutosNotFoundException("Produto não encontrado com o ID: " + id));
+//
+//        produtoExistente.setTitulo(dto.getTitulo());
+//        produtoExistente.setTipoProduto(dto.getTipoProduto());
+//        produtoExistente.setDescricao(dto.getDescricao());
+//        produtoExistente.setPreco(dto.getPreco());
+//        produtoExistente.setItemEstoque(dto.isItemEstoque());
+//        produtoExistente.setEstoque(dto.getEstoque());
+//
+//        return databaseClient.updateProduto(id, produtoExistente);
+//    }
 
     public ProdutosDTO updateProdutos(Long id, ProdutosDTO dto) {
-        ProdutosDTO produtoExistente = databaseClient.findById(id)
-                .orElseThrow(() -> new ProdutosNotFoundException("Produto não encontrado com o ID: " + id));
-
-        produtoExistente.setTitulo(dto.getTitulo());
-        produtoExistente.setTipoProduto(dto.getTipoProduto());
-        produtoExistente.setDescricao(dto.getDescricao());
-        produtoExistente.setPreco(dto.getPreco());
-        produtoExistente.setItemEstoque(dto.isItemEstoque());
-        produtoExistente.setEstoque(dto.getEstoque());
-
-        return databaseClient.updateProduto(id, produtoExistente);
+        System.out.println("[PRODUTOS] Enviando mensagem de atualização de produto para RabbitMQ: " +
+                "id=" + id +
+                ", titulo=" + dto.getTitulo() +
+                ", tipoProduto=" + dto.getTipoProduto() +
+                ", descricao=" + dto.getDescricao() +
+                ", preco=" + dto.getPreco() +
+                ", itemEstoque=" + dto.isItemEstoque() +
+                ", estoque=" + dto.getEstoque());
+        try {
+            rabbitTemplate.convertAndSend("produtos.exchange", "produtos.update", dto);
+            System.out.println("[PRODUTOS] Mensagem de atualização enviada com sucesso!");
+        } catch (Exception e) {
+            System.out.println("[PRODUTOS] Erro ao enviar mensagem de atualização para RabbitMQ: " + e.getMessage());
+            throw e;
+        }
+        return dto;
     }
 
+//    public void deleteProdutos(Long id) {
+//        if (!databaseClient.existsById(id)) {
+//            throw new ProdutosNotFoundException(String.format("Produtos não encontrado com o id '%s'.", id));
+//        }
+//        databaseClient.deleteProduto(id);
+//    }
+
     public void deleteProdutos(Long id) {
-        if (!databaseClient.existsById(id)) {
-            throw new ProdutosNotFoundException(String.format("Produtos não encontrado com o id '%s'.", id));
+        System.out.println("[PRODUTOS] Enviando mensagem de deleção de produto para RabbitMQ. ID: " + id);
+        try {
+            rabbitTemplate.convertAndSend("produtos.exchange", "produtos.delete", id);
+            System.out.println("[PRODUTOS] Mensagem de deleção enviada com sucesso!");
+        } catch (Exception e) {
+            System.out.println("[PRODUTOS] Erro ao enviar mensagem de deleção para RabbitMQ: " + e.getMessage());
+            throw e;
         }
-        databaseClient.deleteProduto(id);
     }
 
 }
