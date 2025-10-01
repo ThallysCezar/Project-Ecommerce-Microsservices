@@ -1,6 +1,6 @@
 package br.com.thallysprojetos.ms_database.amqp.pagamentos;
 
-import br.com.thallysprojetos.ms_database.dtos.pagamentos.PagamentoDTO;
+import br.com.thallysprojetos.common_dtos.pagamento.PagamentoDTO;
 import br.com.thallysprojetos.ms_database.entities.Pagamento;
 import br.com.thallysprojetos.ms_database.services.PagamentoPersistenceService;
 import lombok.AllArgsConstructor;
@@ -15,35 +15,39 @@ public class PagamentoListener {
     private final PagamentoPersistenceService produtosPersistenceService;
     private final ModelMapper modelMapper;
 
-    // Listener para o comando de CRIAÇÃO
-    @RabbitListener(queues = "pagamentos.create.queue")
-    public void handleCreatePayment(PagamentoDTO dto) {
-        System.out.println("Comando de CRIAÇÃO de Pagamento recebido: ID Pedido " + dto.getPedidoId());
+//    @RabbitListener(queues = "pagamentos.create.queue", containerFactory = "pagamentosRabbitListenerContainerFactory")
+//    public void handleCreatePayment(PagamentoDTO dto) {
+//        System.out.println("[PagamentoListener] Comando de CRIAÇÃO de Pagamento recebido: PedidoID=" + dto.getPedidoId());
+//        try {
+//            Pagamento pagamento = modelMapper.map(dto, Pagamento.class);
+//            produtosPersistenceService.save(pagamento);
+//        } catch (Exception e) {
+//            System.out.println("[PagamentoListener] ERRO ao processar CRIAÇÃO de Pagamento: " + e.getMessage());
+//            throw e;
+//        }
+//    }
 
-        // Mapeia o DTO de entrada para a Entidade de domínio
-        Pagamento pagamento = modelMapper.map(dto, Pagamento.class);
-
-        // Persiste o novo pagamento no banco de dados
-        produtosPersistenceService.save(pagamento);
-    }
-
-    // Listener para o comando de ATUALIZAÇÃO (usado também pelo processarPagamento)
-    @RabbitListener(queues = "pagamentos.update.queue")
+    @RabbitListener(queues = "pagamentos.update.queue", containerFactory = "pagamentosRabbitListenerContainerFactory")
     public void handleUpdatePayment(PagamentoDTO dto) {
-        // Nota: O DTO de entrada já deve ter o ID do pagamento a ser atualizado
-        System.out.println("Comando de ATUALIZAÇÃO de Pagamento recebido: ID " + dto.getId());
-
-        // Mapeia o DTO (que contém as alterações de status, valor, etc.)
-        // A lógica do serviço de persistência cuida de buscar o original, aplicar mudanças e salvar.
-        Pagamento pagamento = modelMapper.map(dto, Pagamento.class);
-        produtosPersistenceService.save(pagamento);
+        System.out.println("[PagamentoListener] Comando de ATUALIZAÇÃO de Pagamento recebido: PagamentoID=" + dto.getId());
+        try {
+            Pagamento pagamento = modelMapper.map(dto, Pagamento.class);
+            produtosPersistenceService.save(pagamento);
+        } catch (Exception e) {
+            System.out.println("[PagamentoListener] ERRO ao processar ATUALIZAÇÃO de Pagamento: " + e.getMessage());
+            throw e;
+        }
     }
 
-    // Listener para o comando de EXCLUSÃO
-    @RabbitListener(queues = "pagamentos.delete.queue")
+    @RabbitListener(queues = "pagamentos.delete.queue", containerFactory = "pagamentosRabbitListenerContainerFactory")
     public void handleDeletePayment(Long id) {
-        System.out.println("Comando de EXCLUSÃO de Pagamento recebido: ID " + id);
-        produtosPersistenceService.deleteById(id);
+        System.out.println("[PagamentoListener] Comando de EXCLUSÃO de Pagamento recebido: PagamentoID=" + id);
+        try {
+            produtosPersistenceService.deleteById(id);
+        } catch (Exception e) {
+            System.out.println("[PagamentoListener] ERRO ao processar EXCLUSÃO de Pagamento: " + e.getMessage());
+            throw e;
+        }
     }
 
 }

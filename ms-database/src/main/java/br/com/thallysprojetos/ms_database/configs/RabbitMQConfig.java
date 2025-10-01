@@ -7,11 +7,9 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RabbitMQConfig {
 
-    // Configuração para garantir que o DTO seja serializado como JSON
-    @Bean
-    public Jackson2JsonMessageConverter messageConverter() {
+    @Bean(name = "jackson2JsonMessageConverter")
+    public Jackson2JsonMessageConverter jackson2JsonMessageConverter() {
         return new Jackson2JsonMessageConverter();
     }
 
-    // Você também pode ter outras declarações de Exchange/Queue aqui, se necessário
 }

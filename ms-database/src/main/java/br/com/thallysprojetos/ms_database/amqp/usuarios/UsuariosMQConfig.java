@@ -1,14 +1,17 @@
 package br.com.thallysprojetos.ms_database.amqp.usuarios;
 
 import org.springframework.amqp.core.*;
-import org.springframework.amqp.rabbit.core.RabbitAdmin;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.ApplicationListener;
+import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
+import org.springframework.amqp.rabbit.connection.ConnectionFactory;
+import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class UsuariosMQConfig {
+    public static final String USUARIOS_CREATE_DLQ = "usuarios.create.dlq";
+    public static final String USUARIOS_UPDATE_DLQ = "usuarios.update.dlq";
+    public static final String USUARIOS_DELETE_DLQ = "usuarios.delete.dlq";
 
     public static final String USUARIOS_EXCHANGE = "usuarios.exchange";
     public static final String USUARIOS_QUEUE = "usuarios.create.queue";
@@ -20,19 +23,34 @@ public class UsuariosMQConfig {
     public static final String USUARIOS_DELETE_QUEUE = "usuarios.delete.queue";
     public static final String USUARIOS_DELETE_ROUTING_KEY = "usuarios.delete";
 
-    @Bean
-    public RabbitAdmin criarRabbitAdmin(org.springframework.amqp.rabbit.connection.ConnectionFactory conn){
-        return new RabbitAdmin(conn);
+    @Bean(name = "usuariosRabbitListenerContainerFactory")
+    public SimpleRabbitListenerContainerFactory usuariosRabbitListenerContainerFactory(
+            ConnectionFactory connectionFactory,
+            Jackson2JsonMessageConverter jackson2JsonMessageConverter) {
+        SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
+        factory.setConnectionFactory(connectionFactory);
+        factory.setMessageConverter(jackson2JsonMessageConverter);
+        factory.setConcurrentConsumers(3);
+        factory.setMaxConcurrentConsumers(10);
+        return factory;
     }
 
-    @Bean
-    public ApplicationListener<ApplicationReadyEvent> inicializaAdmin(RabbitAdmin rabbitAdmin){
-        return event -> rabbitAdmin.initialize();
-    }
+//    @Bean
+//    public RabbitAdmin criarRabbitAdmin(org.springframework.amqp.rabbit.connection.ConnectionFactory conn){
+//        return new RabbitAdmin(conn);
+//    }
+//
+//    @Bean
+//    public ApplicationListener<ApplicationReadyEvent> inicializaAdmin(RabbitAdmin rabbitAdmin){
+//        return event -> rabbitAdmin.initialize();
+//    }
 
     @Bean
     public Queue usuariosQueue() {
-        return QueueBuilder.nonDurable(USUARIOS_QUEUE).build();
+        return QueueBuilder.durable(USUARIOS_QUEUE)
+                .withArgument("x-dead-letter-exchange", "")
+                .withArgument("x-dead-letter-routing-key", USUARIOS_CREATE_DLQ)
+                .build();
     }
 
     @Bean
@@ -45,9 +63,21 @@ public class UsuariosMQConfig {
         return BindingBuilder.bind(usuariosQueue()).to(usuariosExchange).with(USUARIOS_ROUTING_KEY);
     }
 
+//    @Bean
+//    public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory(ConnectionFactory connectionFactory) {
+//        SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
+//        factory.setConnectionFactory(connectionFactory);
+//        factory.setConcurrentConsumers(3);
+//        factory.setMaxConcurrentConsumers(10);
+//        return factory;
+//    }
+
     @Bean
     public Queue usuariosUpdateQueue() {
-        return QueueBuilder.nonDurable(USUARIOS_UPDATE_QUEUE).build();
+        return QueueBuilder.durable(USUARIOS_UPDATE_QUEUE)
+                .withArgument("x-dead-letter-exchange", "")
+                .withArgument("x-dead-letter-routing-key", USUARIOS_UPDATE_DLQ)
+                .build();
     }
 
     @Bean
@@ -59,7 +89,10 @@ public class UsuariosMQConfig {
 
     @Bean
     public Queue usuariosDeleteQueue() {
-        return QueueBuilder.nonDurable(USUARIOS_DELETE_QUEUE).build();
+        return QueueBuilder.durable(USUARIOS_DELETE_QUEUE)
+                .withArgument("x-dead-letter-exchange", "")
+                .withArgument("x-dead-letter-routing-key", USUARIOS_DELETE_DLQ)
+                .build();
     }
 
     @Bean
@@ -67,6 +100,21 @@ public class UsuariosMQConfig {
         return BindingBuilder.bind(usuariosDeleteQueue())
                 .to(usuariosExchange)
                 .with(USUARIOS_DELETE_ROUTING_KEY);
+    }
+
+    @Bean
+    public Queue usuariosCreateDLQ() {
+        return QueueBuilder.durable(USUARIOS_CREATE_DLQ).build();
+    }
+
+    @Bean
+    public Queue usuariosUpdateDLQ() {
+        return QueueBuilder.durable(USUARIOS_UPDATE_DLQ).build();
+    }
+
+    @Bean
+    public Queue usuariosDeleteDLQ() {
+        return QueueBuilder.durable(USUARIOS_DELETE_DLQ).build();
     }
 
 }

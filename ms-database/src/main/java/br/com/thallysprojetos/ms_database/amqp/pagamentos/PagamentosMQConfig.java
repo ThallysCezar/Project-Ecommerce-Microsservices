@@ -1,14 +1,18 @@
 package br.com.thallysprojetos.ms_database.amqp.pagamentos;
 
-import org.springframework.amqp.core.Binding;
-import org.springframework.amqp.core.BindingBuilder;
-import org.springframework.amqp.core.DirectExchange;
-import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.*;
+import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
+import org.springframework.amqp.rabbit.connection.ConnectionFactory;
+import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class PagamentosMQConfig {
+
+    public static final String PAGAMENTOS_CREATE_DLQ = "pagamentos.create.dlq";
+    public static final String PAGAMENTOS_UPDATE_DLQ = "pagamentos.update.dlq";
+    public static final String PAGAMENTOS_DELETE_DLQ = "pagamentos.delete.dlq";
 
     public static final String PAGAMENTOS_EXCHANGE = "pagamentos.exchange";
     public static final String PAGAMENTOS_QUEUE = "pagamentos.create.queue";
@@ -20,51 +24,81 @@ public class PagamentosMQConfig {
     public static final String PAGAMENTOS_DELETE_QUEUE = "pagamentos.delete.queue";
     public static final String PAGAMENTOS_DELETE_ROUTING_KEY = "pagamentos.delete";
 
-    // 1. Declaração da Fila
+    @Bean(name = "pagamentosRabbitListenerContainerFactory")
+    public SimpleRabbitListenerContainerFactory pagamentosRabbitListenerContainerFactory(
+            ConnectionFactory connectionFactory,
+            Jackson2JsonMessageConverter jackson2JsonMessageConverter) {
+        SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
+        factory.setConnectionFactory(connectionFactory);
+        factory.setMessageConverter(jackson2JsonMessageConverter);
+        factory.setConcurrentConsumers(3);
+        factory.setMaxConcurrentConsumers(10);
+        return factory;
+    }
+
     @Bean
     public Queue pagamentosQueue() {
-        // A fila precisa ser durável para sobreviver a reinicializações do broker
-        return new Queue(PAGAMENTOS_QUEUE, true);
+        return QueueBuilder.durable(PAGAMENTOS_QUEUE)
+                .withArgument("x-dead-letter-exchange", "")
+                .withArgument("x-dead-letter-routing-key", PAGAMENTOS_CREATE_DLQ)
+                .build();
     }
 
-    // 2. Declaração do Exchange (o ponto de roteamento)
     @Bean
     public DirectExchange pagamentosExchange() {
-        // Usamos DirectExchange porque o produtor enviará para uma chave específica
-        return new DirectExchange(PAGAMENTOS_EXCHANGE);
+        return ExchangeBuilder.directExchange(PAGAMENTOS_EXCHANGE).build();
     }
 
-    // 3. Criação do Binding (Conexão entre a Fila e o Exchange)
     @Bean
-    public Binding bindingPagamentos(Queue pagamentosQueue, DirectExchange pagamentosExchange) {
-        // Conecta a fila ao exchange usando a chave de roteamento
-        return BindingBuilder.bind(pagamentosQueue)
+    public Binding bindingPagamentos(DirectExchange pagamentosExchange) {
+        return BindingBuilder.bind(pagamentosQueue())
                 .to(pagamentosExchange)
                 .with(PAGAMENTOS_ROUTING_KEY);
     }
 
     @Bean
     public Queue pagamentosUpdateQueue() {
-        return new Queue(PAGAMENTOS_UPDATE_QUEUE, true);
+        return QueueBuilder.durable(PAGAMENTOS_UPDATE_QUEUE)
+                .withArgument("x-dead-letter-exchange", "")
+                .withArgument("x-dead-letter-routing-key", PAGAMENTOS_UPDATE_DLQ)
+                .build();
     }
 
     @Bean
-    public Binding bindingPagamentosUpdate(Queue pagamentosUpdateQueue, DirectExchange pagamentosExchange) {
-        return BindingBuilder.bind(pagamentosUpdateQueue)
+    public Binding bindingPagamentosUpdate(DirectExchange pagamentosExchange) {
+        return BindingBuilder.bind(pagamentosUpdateQueue())
                 .to(pagamentosExchange)
                 .with(PAGAMENTOS_UPDATE_ROUTING_KEY);
     }
 
     @Bean
     public Queue pagamentosDeleteQueue() {
-        return new Queue(PAGAMENTOS_DELETE_QUEUE, true);
+        return QueueBuilder.durable(PAGAMENTOS_DELETE_QUEUE)
+                .withArgument("x-dead-letter-exchange", "")
+                .withArgument("x-dead-letter-routing-key", PAGAMENTOS_DELETE_DLQ)
+                .build();
     }
 
     @Bean
-    public Binding bindingPagamentosDelete(Queue pagamentosDeleteQueue, DirectExchange pagamentosExchange) {
-        return BindingBuilder.bind(pagamentosDeleteQueue)
+    public Binding bindingPagamentosDelete(DirectExchange pagamentosExchange) {
+        return BindingBuilder.bind(pagamentosDeleteQueue())
                 .to(pagamentosExchange)
                 .with(PAGAMENTOS_DELETE_ROUTING_KEY);
+    }
+
+    @Bean
+    public Queue pagamentosCreateDLQ() {
+        return QueueBuilder.durable(PAGAMENTOS_CREATE_DLQ).build();
+    }
+
+    @Bean
+    public Queue pagamentosUpdateDLQ() {
+        return QueueBuilder.durable(PAGAMENTOS_UPDATE_DLQ).build();
+    }
+
+    @Bean
+    public Queue pagamentosDeleteDLQ() {
+        return QueueBuilder.durable(PAGAMENTOS_DELETE_DLQ).build();
     }
 
 }
