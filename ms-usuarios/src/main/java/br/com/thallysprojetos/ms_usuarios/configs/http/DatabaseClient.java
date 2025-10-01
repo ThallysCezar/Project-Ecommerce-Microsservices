@@ -1,11 +1,7 @@
 package br.com.thallysprojetos.ms_usuarios.configs.http;
 
-import br.com.thallysprojetos.ms_usuarios.CustomPageImpl;
-import br.com.thallysprojetos.ms_usuarios.dtos.UsuariosDTO;
+import br.com.thallysprojetos.common_dtos.usuario.UsuariosDTO;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PagedModel;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

@@ -1,18 +1,13 @@
 package br.com.thallysprojetos.ms_usuarios.controllers;
 
-import br.com.thallysprojetos.ms_usuarios.dtos.UsuariosDTO;
+import br.com.thallysprojetos.common_dtos.usuario.UsuariosDTO;
 import br.com.thallysprojetos.ms_usuarios.services.UsuariosService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.util.UriComponentsBuilder;
 
-import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -38,12 +33,9 @@ public class UsuariosController {
     }
 
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<UsuariosDTO> createUser(@Valid @RequestBody UsuariosDTO dto, UriComponentsBuilder uriBuilder) {
-        UsuariosDTO pagamento = service.createUser(dto);
-        URI endereco = uriBuilder.path("/usuarios/{id}").buildAndExpand(pagamento.getId()).toUri();
-
-        return ResponseEntity.created(endereco).body(pagamento);
+    public ResponseEntity<String> createUser(@Valid @RequestBody UsuariosDTO dto) {
+        service.createUser(dto);
+        return ResponseEntity.accepted().body("Usuário recebido e será criado em breve (processamento assíncrono via RabbitMQ).");
     }
 
     @PutMapping("/update/{id}")
