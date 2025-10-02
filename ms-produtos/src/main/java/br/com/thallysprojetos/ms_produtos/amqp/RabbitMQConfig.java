@@ -25,6 +25,11 @@ public class RabbitMQConfig {
     public static final String PRODUTOS_DELETE_ROUTING_KEY = "produtos.delete";
 
     @Bean
+    public DirectExchange produtosExchange() {
+        return ExchangeBuilder.directExchange(PRODUTOS_EXCHANGE).build();
+    }
+
+    @Bean
     public Queue produtosCreateQueue() {
         return QueueBuilder.durable(PRODUTOS_CREATE_QUEUE)
             .withArgument("x-dead-letter-exchange", "")
@@ -44,7 +49,6 @@ public class RabbitMQConfig {
             .with(PRODUTOS_CREATE_ROUTING_KEY);
     }
 
-    // UPDATE
     @Bean
     public Queue produtosUpdateQueue() {
         return QueueBuilder.durable(PRODUTOS_UPDATE_QUEUE)
@@ -65,7 +69,6 @@ public class RabbitMQConfig {
             .with(PRODUTOS_UPDATE_ROUTING_KEY);
     }
 
-    // DELETE
     @Bean
     public Queue produtosDeleteQueue() {
         return QueueBuilder.durable(PRODUTOS_DELETE_QUEUE)
@@ -109,11 +112,6 @@ public class RabbitMQConfig {
         rabbitTemplate.setMessageConverter(messageConverter);
 
         return rabbitTemplate;
-    }
-
-    @Bean
-    public DirectExchange produtosExchange() {
-        return ExchangeBuilder.directExchange(PRODUTOS_EXCHANGE).build();
     }
 
 }

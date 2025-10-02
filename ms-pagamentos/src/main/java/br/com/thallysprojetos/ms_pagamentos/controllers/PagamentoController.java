@@ -33,13 +33,11 @@ public class PagamentoController {
         return ResponseEntity.ok().body(pagamento);
     }
 
-    // NOVO ENDPOINT PARA CRIAÇÃO DE PAGAMENTOS
-//    @PostMapping
-//    public ResponseEntity<PagamentoDTO> createPayment(@RequestBody @Valid PagamentoDTO dto) {
-//        PagamentoDTO pagamentoCriado = service.createPayment(dto);
-//        // Opcional: retornar a URL para o novo recurso
-//        return new ResponseEntity<>(pagamentoCriado, HttpStatus.CREATED);
-//    }
+    @PostMapping("/pedido/create")
+    public ResponseEntity<PagamentoDTO> createPayment(@RequestBody @Valid PagamentoDTO dto) {
+        PagamentoDTO pagamentoCriado = service.createPayment(dto);
+        return new ResponseEntity<>(pagamentoCriado, HttpStatus.CREATED);
+    }
 
     @PutMapping("/update/{id}")
     public ResponseEntity<PagamentoDTO> updatePagamento(@Valid @PathVariable Long id, @RequestBody PagamentoDTO dto) {

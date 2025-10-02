@@ -1,7 +1,7 @@
 package br.com.thallysprojetos.ms_pagamentos.services;
 
 import br.com.thallysprojetos.common_dtos.pagamento.PagamentoDTO;
-import br.com.thallysprojetos.common_dtos.pagamento.enums.StatusPagamento;
+import br.com.thallysprojetos.common_dtos.enums.StatusPagamento;
 import br.com.thallysprojetos.ms_pagamentos.configs.http.DatabaseClient;
 import br.com.thallysprojetos.ms_pagamentos.exceptions.pagamento.PagamentoNotFoundException;
 import lombok.AllArgsConstructor;
@@ -40,16 +40,12 @@ public class PagamentoService {
 //        return databaseClient.createPagamento(dto);
 //    }
 
-//    public PagamentoDTO createPayment(PagamentoDTO dto) {
-//        // Define o status inicial no serviço de negócio
-//        dto.setStatus(StatusPagamento.CRIADO);
-//
-//        // Envia o comando de criação para o ms-database (assíncrono)
-//        rabbitTemplate.convertAndSend("pagamentos.exchange", "pagamentos.create", dto);
-//
-//        // Retorna o DTO de entrada (o ID real será gerado de forma assíncrona)
-//        return dto;
-//    }
+    public PagamentoDTO createPayment(PagamentoDTO dto) {
+        dto.setStatus(StatusPagamento.CRIADO);
+
+        rabbitTemplate.convertAndSend("pagamentos.exchange", "pagamentos.create", dto);
+        return dto;
+    }
 
 //    public PagamentoDTO updatePagamento(Long id, PagamentoDTO dto) {
 //        PagamentoDTO pagamentoExistente = databaseClient.findById(id)
@@ -141,7 +137,7 @@ public class PagamentoService {
         PagamentoDTO pagamento = databaseClient.findById(id)
                 .orElseThrow(() -> new PagamentoNotFoundException("Pagamento não encontrado com o ID: " + id));
 
-        if (pagamento.getStatus().equals(StatusPagamento.CRIADO)) {
+        if (pagamento.getStatus().equals(StatusPagamento.CRIADO) || pagamento.getStatus().equals(StatusPagamento.PROCESSADO)) {
             pagamento.setStatus(StatusPagamento.CONFIRMADO);
         } else {
             pagamento.setStatus(StatusPagamento.CANCELADO);

@@ -38,7 +38,13 @@ public class RabbitMQConfig {
     public static final String USUARIOS_DELETE_DLQ = "usuarios.delete.dlq";
     public static final String USUARIOS_DELETE_ROUTING_KEY = "usuarios.delete";
 
-    // CREATE
+    public static final String USUARIOS_EXCHANGE = "usuarios.exchange";
+
+    @Bean
+    public DirectExchange usuariosExchange() {
+        return ExchangeBuilder.directExchange(USUARIOS_EXCHANGE).build();
+    }
+
     @Bean
     public Queue usuariosCreateQueue() {
         return QueueBuilder.durable(USUARIOS_CREATE_QUEUE)
@@ -59,7 +65,6 @@ public class RabbitMQConfig {
             .with(USUARIOS_CREATE_ROUTING_KEY);
     }
 
-    // UPDATE
     @Bean
     public Queue usuariosUpdateQueue() {
         return QueueBuilder.durable(USUARIOS_UPDATE_QUEUE)
@@ -80,7 +85,6 @@ public class RabbitMQConfig {
             .with(USUARIOS_UPDATE_ROUTING_KEY);
     }
 
-    // DELETE
     @Bean
     public Queue usuariosDeleteQueue() {
         return QueueBuilder.durable(USUARIOS_DELETE_QUEUE)
@@ -100,8 +104,6 @@ public class RabbitMQConfig {
             .to(usuariosExchange)
             .with(USUARIOS_DELETE_ROUTING_KEY);
     }
-
-    public static final String USUARIOS_EXCHANGE = "usuarios.exchange";
 
     @Bean
     public RabbitAdmin criarRabbitAdmin(ConnectionFactory conn){
@@ -124,11 +126,6 @@ public class RabbitMQConfig {
         rabbitTemplate.setMessageConverter(messageConverter);
 
         return rabbitTemplate;
-    }
-
-    @Bean
-    public DirectExchange usuariosExchange() {
-        return ExchangeBuilder.directExchange(USUARIOS_EXCHANGE).build();
     }
 
 }
