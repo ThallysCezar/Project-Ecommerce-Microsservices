@@ -1,4 +1,4 @@
-package br.com.thallysprojetos.ms_pedidos.exceptions.usuarios;
+package br.com.thallysprojetos.ms_pedidos.exceptions.pedidos;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;

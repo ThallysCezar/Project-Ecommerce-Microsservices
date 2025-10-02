@@ -1,18 +1,15 @@
 package br.com.thallysprojetos.ms_pedidos.service;
 
+import br.com.thallysprojetos.common_dtos.enums.StatusPagamento;
+import br.com.thallysprojetos.common_dtos.enums.StatusPedidos;
+import br.com.thallysprojetos.common_dtos.pagamento.PagamentoDTO;
+import br.com.thallysprojetos.common_dtos.pedido.PedidosDTO;
 import br.com.thallysprojetos.ms_pedidos.configs.https.DatabaseClient;
-import br.com.thallysprojetos.ms_pedidos.configs.https.PagamentosClient;
 import br.com.thallysprojetos.ms_pedidos.configs.https.ProdutosClient;
 import br.com.thallysprojetos.ms_pedidos.configs.https.UsuariosClient;
-import br.com.thallysprojetos.ms_pedidos.dtos.PedidosDTO;
-import br.com.thallysprojetos.ms_pedidos.dtos.enums.StatusPagamento;
-import br.com.thallysprojetos.ms_pedidos.dtos.enums.StatusPedidos;
-import br.com.thallysprojetos.ms_pedidos.dtos.pagamentos.PagamentoDTO;
-import br.com.thallysprojetos.ms_pedidos.exceptions.usuarios.PedidosNotFoundException;
+import br.com.thallysprojetos.ms_pedidos.exceptions.pedidos.PedidosNotFoundException;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -23,12 +20,11 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class PedidosService {
 
-    //    private final PedidosRepository pedidosRepository;
     private final UsuariosClient usuariosClient;
     private final ProdutosClient produtosClient;
-    private final PagamentosClient pagamentosClient;
     private final DatabaseClient databaseClient;
     private final ModelMapper modelMapper;
+    private final org.springframework.amqp.rabbit.core.RabbitTemplate rabbitTemplate;
 
     public List<PedidosDTO> findAll() {
         return databaseClient.findAll();
@@ -66,67 +62,52 @@ public class PedidosService {
         dto.setDataHora(LocalDateTime.now());
         dto.setStatusPedidos(StatusPedidos.CRIADO);
 
-        return databaseClient.createPedido(dto);
+        if (dto.getPagamento() != null) {
+            dto.getPagamento().setStatus(StatusPagamento.CRIADO);
+            dto.getPagamento().setPedidoId(dto.getId());
+            System.out.println("[PEDIDOS] Enviando comando de CRIAÇÃO de pagamento para RabbitMQ: UsuarioID=" + dto.getUsuario().getId());
+            rabbitTemplate.convertAndSend("pagamentos.exchange", "pagamentos.create", dto.getPagamento());
+        }
+        System.out.println("[PEDIDOS] Enviando comando de CRIAÇÃO de pedido para RabbitMQ: UsuarioID=" + dto.getUsuario().getId());
+        rabbitTemplate.convertAndSend("pedidos.exchange", "pedidos.create", dto);
+        return dto;
     }
 
     public void processarPagamentoDoPedido(Long idPedido, PagamentoDTO pagamentoDto) {
-        PedidosDTO pedido = databaseClient.findById(idPedido)
-                .orElseThrow(() -> new PedidosNotFoundException("Pedido não encontrado."));
-
+        if (pagamentoDto == null) {
+            throw new RuntimeException("Dados do pagamento não fornecidos.");
+        }
         pagamentoDto.setPedidoId(idPedido);
-        PagamentoDTO pagamentoCriado = pagamentosClient.createPayment(pagamentoDto);
-
-        pedido.setPagamentoId(pagamentoCriado.getId());
-        pedido.setStatusPedidos(StatusPedidos.AGUARDANDO_CONFIRMACAO);
-        databaseClient.updatePedido(idPedido, pedido);
+        pagamentoDto.setStatus(StatusPagamento.PROCESSADO);
+        System.out.println("[PEDIDOS] Enviando comando de PROCESSAMENTO de pagamento para RabbitMQ: PedidoID=" + idPedido);
+        rabbitTemplate.convertAndSend("pagamentos.exchange", "pagamentos.create", pagamentoDto);
     }
 
-    public PedidosDTO updatePedidos(Long id, PedidosDTO dto) {
-        PedidosDTO pedidoExistente = databaseClient.findById(id)
-                .orElseThrow(() -> new PedidosNotFoundException("Pedido não encontrado com o ID: " + id));
-
-        if (dto.getStatusPedidos() != null) {
-            pedidoExistente.setStatusPedidos(dto.getStatusPedidos());
+    public void updatePedidos(Long id, PedidosDTO dto) {
+        System.out.println("[PEDIDOS] Enviando comando de ATUALIZAÇÃO de pedido para RabbitMQ: PedidoID=" + id);
+        try {
+            System.out.println("[PEDIDOS] Enviando comando de ATUALIZAÇÃO de pedido para RabbitMQ: PedidoID=" + id);
+            rabbitTemplate.convertAndSend("pedidos.exchange", "pedidos.update", dto);
+        } catch (Exception e) {
+            System.out.println("[PEDIDOS] Erro ao enviar mensagem de atualização para RabbitMQ: " + e.getMessage());
+            throw e;
         }
 
-        // A lógica de sincronização de itens deve ser movida para cá se for necessária
-        // para o update de PedidosDTO.
-
-        return databaseClient.updatePedido(id, pedidoExistente);
     }
 
     public void deletePedidos(Long id) {
-        if (!databaseClient.existsById(id)) {
-            throw new PedidosNotFoundException(String.format("Pedidos não encontrado com o id '%s'.", id));
-        }
-        databaseClient.deletePedido(id);
+        System.out.println("[PEDIDOS] Enviando comando de EXCLUSÃO de pedido para RabbitMQ: PedidoID=" + id);
+        rabbitTemplate.convertAndSend("pedidos.exchange", "pedidos.delete", id);
     }
 
     public void confirmarPedidos(Long id) {
-        PedidosDTO pedido = databaseClient.findById(id)
-                .orElseThrow(() -> new PedidosNotFoundException("Pedido não encontrado"));
-
-        if (pedido.getPagamentoId() == null) {
-            throw new PedidosNotFoundException("O pedido ainda não tem um pagamento associado.");
-        }
-
-        PagamentoDTO pagamento = pagamentosClient.findByPedidoId(pedido.getPagamentoId());
-
-        if (pagamento.getStatus() == StatusPagamento.CONFIRMADO) {
-            pedido.setStatusPedidos(StatusPedidos.PAGO);
-        } else {
-            pedido.setStatusPedidos(StatusPedidos.AGUARDANDO_CONFIRMACAO);
-        }
-
-        databaseClient.updatePedido(id, pedido);
+        System.out.println("[PEDIDOS] Enviando comando de CONFIRMAÇÃO de pedido para RabbitMQ: PedidoID=" + id);
+        rabbitTemplate.convertAndSend("pedidos.exchange", "pedidos.confirm", id);
     }
 
     public void cancelarPedido(Long id) {
-        PedidosDTO pedido = databaseClient.findById(id)
-                .orElseThrow(() -> new PedidosNotFoundException("Pedido não encontrado"));
-
-        pedido.setStatusPedidos(StatusPedidos.CANCELADO);
-        databaseClient.updatePedido(id, pedido);
+        System.out.println("[PEDIDOS] Enviando comando de CANCELAMENTO de pedido para RabbitMQ: PedidoID=" + id);
+        rabbitTemplate.convertAndSend("pedidos.exchange", "pedidos.cancel", id);
     }
 
     // A lógica de sincronização de itens deve ser ajustada para o novo contexto de DTOs.

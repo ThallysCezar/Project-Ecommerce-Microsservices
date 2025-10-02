@@ -1,13 +1,11 @@
 package br.com.thallysprojetos.ms_pedidos.configs.https;
 
-import br.com.thallysprojetos.ms_pedidos.dtos.PedidosDTO;
-import br.com.thallysprojetos.ms_pedidos.dtos.ProdutoIdDTO;
-import br.com.thallysprojetos.ms_pedidos.dtos.pagamentos.PagamentoDTO;
-import br.com.thallysprojetos.ms_pedidos.dtos.usuarios.UsuariosDTO;
+import br.com.thallysprojetos.common_dtos.pedido.PedidosDTO;
+import br.com.thallysprojetos.common_dtos.pedido.ProdutoIdDTO;
+import br.com.thallysprojetos.common_dtos.usuario.UsuariosDTO;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,29 +19,8 @@ public interface DatabaseClient {
     @GetMapping("/pedidos/{id}")
     Optional<PedidosDTO> findById(@PathVariable("id") Long id);
 
-    @GetMapping("/pedidos/{id}/exists")
-    Boolean existsById(@PathVariable("id") Long id);
-
-    @GetMapping("/pedidos/usuarios/id")
-    List<PedidosDTO> findByUsuarioId(@PathVariable("id") Long id);
-
-    @PostMapping("/pedidos")
-    PedidosDTO createPedido(@RequestBody PedidosDTO dto);
-
-    @GetMapping("/pedidos")
-    Page<PedidosDTO> findAllPedidos(Pageable pageable);
-
-    @GetMapping("/pedidos/{id}")
-    PedidosDTO findPedidoById(@PathVariable("id") Long id);
-
     @GetMapping("/pedidos/user/{id}")
     List<PedidosDTO> findPedidosByUserId(@PathVariable("id") Long id);
-
-    @PutMapping("/pedidos/{id}")
-    PedidosDTO updatePedido(@PathVariable("id") Long id, @RequestBody PedidosDTO dto);
-
-    @DeleteMapping("/pedidos/{id}")
-    void deletePedido(@PathVariable("id") Long id);
 
     // Endpoints para a entidade Usuarios
     @GetMapping("/usuarios/{id}")
@@ -53,11 +30,10 @@ public interface DatabaseClient {
     @GetMapping("/produtos/{id}")
     ProdutoIdDTO findProdutoById(@PathVariable("id") Long id);
 
-    // Endpoints para a entidade Pagamento
-    @GetMapping("/pagamentos/pedido/{idPedido}")
-    PagamentoDTO findPagamentoByPedidoId(@PathVariable("idPedido") Long idPedido);
+    @GetMapping("/pedidos/{id}/exists")
+    Boolean existsById(@PathVariable("id") Long id);
 
-    @PostMapping("/pagamentos")
-    PagamentoDTO createPagamento(@RequestBody PagamentoDTO dto);
+    @GetMapping("/pedidos/usuarios/id")
+    List<PedidosDTO> findByUsuarioId(@PathVariable("id") Long id);
 
 }

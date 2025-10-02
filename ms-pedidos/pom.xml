@@ -102,6 +102,13 @@
 			<artifactId>spring-cloud-starter-openfeign</artifactId>
 			<version>4.3.0</version>
 		</dependency>
+
+		<dependency>
+			<groupId>br.com.thallysprojetos.common_dtos</groupId>
+			<artifactId>common-dtos</artifactId>
+			<version>1.0.0</version>
+			<scope>compile</scope>
+		</dependency>
 	</dependencies>
 
 	<build>

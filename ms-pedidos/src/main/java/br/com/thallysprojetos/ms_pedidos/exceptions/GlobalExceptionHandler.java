@@ -1,8 +1,8 @@
 package br.com.thallysprojetos.ms_pedidos.exceptions;
 
-import br.com.thallysprojetos.ms_pedidos.exceptions.usuarios.PedidosAlreadyExistException;
-import br.com.thallysprojetos.ms_pedidos.exceptions.usuarios.PedidosException;
-import br.com.thallysprojetos.ms_pedidos.exceptions.usuarios.PedidosNotFoundException;
+import br.com.thallysprojetos.ms_pedidos.exceptions.pedidos.PedidosAlreadyExistException;
+import br.com.thallysprojetos.ms_pedidos.exceptions.pedidos.PedidosException;
+import br.com.thallysprojetos.ms_pedidos.exceptions.pedidos.PedidosNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
