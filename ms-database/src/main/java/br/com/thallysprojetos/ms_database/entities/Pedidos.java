@@ -1,6 +1,6 @@
 package br.com.thallysprojetos.ms_database.entities;
 
-import br.com.thallysprojetos.ms_database.entities.enums.StatusPedidos;
+import br.com.thallysprojetos.common_dtos.enums.StatusPedidos;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -44,4 +44,8 @@ public class PagamentoPersistenceService {
         pagamentoRepository.deleteById(id);
     }
 
+    public boolean existsById(Long id) {
+        return pagamentoRepository.existsById(id);
+    }
+
 }

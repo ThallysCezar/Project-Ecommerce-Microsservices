@@ -43,7 +43,7 @@ public class ProdutosMQConfig {
                 .build();
     }
 
-    @Bean
+    @Bean(name = "produtosExchange")
     public DirectExchange produtosExchange() {
         return ExchangeBuilder.directExchange(PRODUTOS_EXCHANGE).build();
     }

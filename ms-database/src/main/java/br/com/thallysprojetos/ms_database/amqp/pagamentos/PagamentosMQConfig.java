@@ -24,6 +24,10 @@ public class PagamentosMQConfig {
     public static final String PAGAMENTOS_DELETE_QUEUE = "pagamentos.delete.queue";
     public static final String PAGAMENTOS_DELETE_ROUTING_KEY = "pagamentos.delete";
 
+    public static final String PAGAMENTOS_UPDATE_PEDIDO_QUEUE = "pedidos.update.pagamento.queue";
+    public static final String PEDIDOS_EXCHANGE = "pedidos.exchange";
+    public static final String PAGAMENTOS_UPDATE_PEDIDO_ROUTING_KEY = "pedidos.update.pagamento";
+
     @Bean(name = "pagamentosRabbitListenerContainerFactory")
     public SimpleRabbitListenerContainerFactory pagamentosRabbitListenerContainerFactory(
             ConnectionFactory connectionFactory,
@@ -39,12 +43,12 @@ public class PagamentosMQConfig {
     @Bean
     public Queue pagamentosQueue() {
         return QueueBuilder.durable(PAGAMENTOS_QUEUE)
-                .withArgument("x-dead-letter-exchange", "")
+                .withArgument("x-dead-letter-exchange", PAGAMENTOS_EXCHANGE)
                 .withArgument("x-dead-letter-routing-key", PAGAMENTOS_CREATE_DLQ)
                 .build();
     }
 
-    @Bean
+    @Bean(name = "pagamentosExchange")
     public DirectExchange pagamentosExchange() {
         return ExchangeBuilder.directExchange(PAGAMENTOS_EXCHANGE).build();
     }
@@ -59,7 +63,7 @@ public class PagamentosMQConfig {
     @Bean
     public Queue pagamentosUpdateQueue() {
         return QueueBuilder.durable(PAGAMENTOS_UPDATE_QUEUE)
-                .withArgument("x-dead-letter-exchange", "")
+                .withArgument("x-dead-letter-exchange", PAGAMENTOS_EXCHANGE)
                 .withArgument("x-dead-letter-routing-key", PAGAMENTOS_UPDATE_DLQ)
                 .build();
     }
@@ -74,7 +78,7 @@ public class PagamentosMQConfig {
     @Bean
     public Queue pagamentosDeleteQueue() {
         return QueueBuilder.durable(PAGAMENTOS_DELETE_QUEUE)
-                .withArgument("x-dead-letter-exchange", "")
+                .withArgument("x-dead-letter-exchange", PAGAMENTOS_EXCHANGE)
                 .withArgument("x-dead-letter-routing-key", PAGAMENTOS_DELETE_DLQ)
                 .build();
     }
@@ -84,6 +88,23 @@ public class PagamentosMQConfig {
         return BindingBuilder.bind(pagamentosDeleteQueue())
                 .to(pagamentosExchange)
                 .with(PAGAMENTOS_DELETE_ROUTING_KEY);
+    }
+
+    @Bean
+    public Queue pedidosUpdatePagamentoQueue() {
+        return QueueBuilder.durable(PAGAMENTOS_UPDATE_PEDIDO_QUEUE).build();
+    }
+
+    @Bean(name = "pedidosExchangeFromPagamentos")
+    public DirectExchange pedidosExchangeFromPagamentos() {
+        return ExchangeBuilder.directExchange(PEDIDOS_EXCHANGE).build();
+    }
+
+    @Bean
+    public Binding pedidosUpdatePagamentoBinding(DirectExchange pedidosExchangeFromPagamentos) {
+        return BindingBuilder.bind(pedidosUpdatePagamentoQueue())
+                .to(pedidosExchangeFromPagamentos)
+                .with(PAGAMENTOS_UPDATE_PEDIDO_ROUTING_KEY);
     }
 
     @Bean

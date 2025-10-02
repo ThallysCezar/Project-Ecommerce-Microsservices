@@ -53,7 +53,7 @@ public class UsuariosMQConfig {
                 .build();
     }
 
-    @Bean
+    @Bean(name = "usuariosExchange")
     public DirectExchange usuariosExchange() {
         return ExchangeBuilder.directExchange(USUARIOS_EXCHANGE).build();
     }

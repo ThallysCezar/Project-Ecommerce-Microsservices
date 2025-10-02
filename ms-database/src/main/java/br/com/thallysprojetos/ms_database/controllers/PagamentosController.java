@@ -40,4 +40,9 @@ public class PagamentosController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/{id}/exists")
+    public ResponseEntity<Boolean> existsById(@PathVariable Long id) {
+        return ResponseEntity.ok(service.existsById(id));
+    }
+    
 }
