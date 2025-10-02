@@ -1,7 +1,7 @@
 package br.com.thallysprojetos.common_dtos.pagamento;
 
-import br.com.thallysprojetos.common_dtos.pagamento.enums.StatusPagamento;
-import br.com.thallysprojetos.common_dtos.pagamento.enums.TipoFormaPagamento;
+import br.com.thallysprojetos.common_dtos.enums.StatusPagamento;
+import br.com.thallysprojetos.common_dtos.enums.TipoFormaPagamento;
 
 public class PagamentoDTO {
 
@@ -16,10 +16,12 @@ public class PagamentoDTO {
     private String codigoDeBarrasBoleto;
     private String chavePix;
 
+    private Long pedidoId;
+
     public PagamentoDTO() {
     }
 
-    public PagamentoDTO(Long id, Double valor, TipoFormaPagamento tipoPagamento, StatusPagamento status, String nomeTitularCartao, String numeroCartao, String expiracaoCartao, String codigoCartao, String codigoDeBarrasBoleto, String chavePix) {
+    public PagamentoDTO(Long id, Double valor, TipoFormaPagamento tipoPagamento, StatusPagamento status, String nomeTitularCartao, String numeroCartao, String expiracaoCartao, String codigoCartao, String codigoDeBarrasBoleto, String chavePix, Long pedidoId) {
         this.id = id;
         this.valor = valor;
         this.tipoPagamento = tipoPagamento;
@@ -30,6 +32,7 @@ public class PagamentoDTO {
         this.codigoCartao = codigoCartao;
         this.codigoDeBarrasBoleto = codigoDeBarrasBoleto;
         this.chavePix = chavePix;
+        this.pedidoId = pedidoId;
     }
 
     public Long getId() {
@@ -112,6 +115,14 @@ public class PagamentoDTO {
         this.chavePix = chavePix;
     }
 
+    public Long getPedidoId() {
+        return pedidoId;
+    }
+
+    public void setPedidoId(Long pedidoId) {
+        this.pedidoId = pedidoId;
+    }
+
     @Override
     public String toString() {
         return "PagamentoDTO{" +
@@ -125,7 +136,7 @@ public class PagamentoDTO {
                 ", codigoCartao='" + codigoCartao + '\'' +
                 ", codigoDeBarrasBoleto='" + codigoDeBarrasBoleto + '\'' +
                 ", chavePix='" + chavePix + '\'' +
+                ", pedidoId=" + pedidoId +
                 '}';
     }
-
 }

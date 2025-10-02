@@ -1,4 +1,4 @@
-package br.com.thallysprojetos.ms_pedidos.dtos.enums;
+package br.com.thallysprojetos.common_dtos.enums;
 
 public enum TipoFormaPagamento {
 

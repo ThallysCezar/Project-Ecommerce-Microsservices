@@ -1,1 +1,10 @@
-br\com\thallysprojetos\common_dtos\dtos\UsuariosDTO.class
+br\com\thallysprojetos\common_dtos\pagamento\PagamentoDTO.class
+br\com\thallysprojetos\common_dtos\produto\ProdutosDTO.class
+br\com\thallysprojetos\common_dtos\enums\TipoFormaPagamento.class
+br\com\thallysprojetos\common_dtos\enums\StatusPedidos.class
+br\com\thallysprojetos\common_dtos\enums\StatusPagamento.class
+br\com\thallysprojetos\common_dtos\pedido\UsuarioIdDTO.class
+br\com\thallysprojetos\common_dtos\pedido\PedidosDTO.class
+br\com\thallysprojetos\common_dtos\pedido\ItemDoPedidoDTO.class
+br\com\thallysprojetos\common_dtos\usuario\UsuariosDTO.class
+br\com\thallysprojetos\common_dtos\pedido\ProdutoIdDTO.class
