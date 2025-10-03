@@ -2,7 +2,8 @@ package br.com.thallysprojetos.ms_usuarios.configs.http;
 
 import br.com.thallysprojetos.common_dtos.usuario.UsuariosDTO;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,13 +23,4 @@ public interface DatabaseClient {
     @GetMapping("/usuarios/{id}/exists")
     boolean existsById(@PathVariable("id") Long id);
 
-    @PostMapping("/usuarios")
-    UsuariosDTO createUsuarios(@RequestBody UsuariosDTO dto);
-
-    @PutMapping("/usuarios/{id}")
-    UsuariosDTO updateUsuarios(@PathVariable("id") Long id, @RequestBody UsuariosDTO dto);
-
-    @DeleteMapping("/usuarios/{id}")
-    void deleteUsuarios(@PathVariable("id") Long id);
-    
 }

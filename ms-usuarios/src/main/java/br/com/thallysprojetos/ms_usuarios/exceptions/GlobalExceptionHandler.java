@@ -31,8 +31,6 @@ public class GlobalExceptionHandler {
     }
 
     private ResponseEntity<ErrorMessage> handleException(Exception ex, HttpServletRequest request, HttpStatus status) {
-        String messageError = "Api Error: ";
-//        LOGGER.error(messageError, ex);
         return ResponseEntity
                 .status(status)
                 .contentType(MediaType.APPLICATION_JSON)

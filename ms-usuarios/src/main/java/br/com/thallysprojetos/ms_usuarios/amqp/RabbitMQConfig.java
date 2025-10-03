@@ -13,19 +13,6 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RabbitMQConfig {
 
-//    @Bean(name = "usuariosRabbitListenerContainerFactory")
-//    public org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory usuariosRabbitListenerContainerFactory(
-//            org.springframework.amqp.rabbit.connection.ConnectionFactory connectionFactory,
-//            org.springframework.amqp.support.converter.Jackson2JsonMessageConverter jackson2JsonMessageConverter) {
-//        org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory factory = new org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory();
-//        factory.setConnectionFactory(connectionFactory);
-//        factory.setMessageConverter(jackson2JsonMessageConverter);
-//        factory.setConcurrentConsumers(3);
-//        factory.setMaxConcurrentConsumers(10);
-//        return factory;
-//    }
-
-    
     public static final String USUARIOS_CREATE_QUEUE = "usuarios.create.queue";
     public static final String USUARIOS_CREATE_DLQ = "usuarios.create.dlq";
     public static final String USUARIOS_CREATE_ROUTING_KEY = "usuarios.create";
@@ -48,7 +35,7 @@ public class RabbitMQConfig {
     @Bean
     public Queue usuariosCreateQueue() {
         return QueueBuilder.durable(USUARIOS_CREATE_QUEUE)
-            .withArgument("x-dead-letter-exchange", "")
+            .withArgument("x-dead-letter-exchange", USUARIOS_EXCHANGE)
             .withArgument("x-dead-letter-routing-key", USUARIOS_CREATE_DLQ)
             .build();
     }
@@ -68,7 +55,7 @@ public class RabbitMQConfig {
     @Bean
     public Queue usuariosUpdateQueue() {
         return QueueBuilder.durable(USUARIOS_UPDATE_QUEUE)
-            .withArgument("x-dead-letter-exchange", "")
+            .withArgument("x-dead-letter-exchange", USUARIOS_EXCHANGE)
             .withArgument("x-dead-letter-routing-key", USUARIOS_UPDATE_DLQ)
             .build();
     }
@@ -88,7 +75,7 @@ public class RabbitMQConfig {
     @Bean
     public Queue usuariosDeleteQueue() {
         return QueueBuilder.durable(USUARIOS_DELETE_QUEUE)
-            .withArgument("x-dead-letter-exchange", "")
+            .withArgument("x-dead-letter-exchange", USUARIOS_EXCHANGE)
             .withArgument("x-dead-letter-routing-key", USUARIOS_DELETE_DLQ)
             .build();
     }
