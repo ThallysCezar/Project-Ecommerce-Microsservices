@@ -1,4 +1,4 @@
-package br.com.thallysprojetos.gateway;
+package br.com.thallysprojetos.ms_config;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
