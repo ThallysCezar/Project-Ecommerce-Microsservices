@@ -1,7 +1,0 @@
--- Inserção de dados da tabela t_model
---INSERT INTO t_model (id, model_name)
---VALUES
---(1, 'Modelo 1'),
---(2, 'Modelo 2'),
---(3, 'Modelo 3'),
---(4, 'Modelo 4');

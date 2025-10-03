@@ -2,7 +2,9 @@ package br.com.thallysprojetos.common_dtos.pagamento;
 
 import br.com.thallysprojetos.common_dtos.enums.StatusPagamento;
 import br.com.thallysprojetos.common_dtos.enums.TipoFormaPagamento;
+import br.com.thallysprojetos.common_dtos.utils.ValidacaoPagamento;
 
+@ValidacaoPagamento
 public class PagamentoDTO {
 
     private Long id;
@@ -139,4 +141,5 @@ public class PagamentoDTO {
                 ", pedidoId=" + pedidoId +
                 '}';
     }
+
 }

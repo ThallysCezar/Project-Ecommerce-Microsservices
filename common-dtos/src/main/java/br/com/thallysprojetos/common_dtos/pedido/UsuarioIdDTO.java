@@ -1,7 +1,5 @@
 package br.com.thallysprojetos.common_dtos.pedido;
 
-import java.io.Serializable;
-
 public class UsuarioIdDTO {
 
     private Long id;

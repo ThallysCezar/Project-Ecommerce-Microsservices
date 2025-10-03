@@ -1,6 +1,7 @@
 package br.com.thallysprojetos.common_dtos.usuario;
 
 public class UsuariosDTO {
+
     private Long id;
     private String userName;
     private String email;
@@ -42,4 +43,5 @@ public class UsuariosDTO {
                 ", password='" + password + '\'' +
                 '}';
     }
+
 }

@@ -2,6 +2,7 @@
 package br.com.thallysprojetos.common_dtos.pedido;
 
 import br.com.thallysprojetos.common_dtos.enums.StatusPedidos;
+import br.com.thallysprojetos.common_dtos.pagamento.PagamentoDTO;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -13,7 +14,7 @@ public class PedidosDTO {
     private StatusPedidos statusPedidos;
     private List<ItemDoPedidoDTO> itens;
     private UsuarioIdDTO usuario;
-    private br.com.thallysprojetos.common_dtos.pagamento.PagamentoDTO pagamento;
+    private PagamentoDTO pagamento;
 
     public PedidosDTO() {
     }
@@ -67,12 +68,11 @@ public class PedidosDTO {
         this.usuario = usuario;
     }
 
-
-    public br.com.thallysprojetos.common_dtos.pagamento.PagamentoDTO getPagamento() {
+    public PagamentoDTO getPagamento() {
         return pagamento;
     }
 
-    public void setPagamento(br.com.thallysprojetos.common_dtos.pagamento.PagamentoDTO pagamento) {
+    public void setPagamento(PagamentoDTO pagamento) {
         this.pagamento = pagamento;
     }
 
