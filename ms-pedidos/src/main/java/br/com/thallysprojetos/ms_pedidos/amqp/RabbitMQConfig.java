@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class RabbitMQConfig {
+
     public static final String PEDIDOS_EXCHANGE = "pedidos.exchange";
     public static final String PEDIDOS_CREATE_QUEUE = "pedidos.create.queue";
     public static final String PEDIDOS_UPDATE_QUEUE = "pedidos.update.queue";

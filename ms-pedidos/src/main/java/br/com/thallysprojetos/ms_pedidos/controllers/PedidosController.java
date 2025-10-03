@@ -10,7 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -35,13 +34,22 @@ public class PedidosController {
         return ResponseEntity.ok().body(service.findByUserId(id));
     }
 
+//    @PostMapping
+//    @ResponseStatus(HttpStatus.CREATED)
+//    public ResponseEntity<PedidosDTO> save(@Valid @RequestBody PedidosDTO dto, UriComponentsBuilder uriBuilder) {
+//        PedidosDTO pagamento = service.createPedido(dto);
+//        URI endereco = uriBuilder.path("/pedidos/{id}").buildAndExpand(pagamento.getId()).toUri();
+//
+//        return ResponseEntity.created(endereco).body(pagamento);
+//    }
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<PedidosDTO> save(@Valid @RequestBody PedidosDTO dto, UriComponentsBuilder uriBuilder) {
-        PedidosDTO pagamento = service.createPedido(dto);
-        URI endereco = uriBuilder.path("/pedidos/{id}").buildAndExpand(pagamento.getId()).toUri();
+    public ResponseEntity<String> save(@Valid @RequestBody PedidosDTO dto, UriComponentsBuilder uriBuilder) {
+        service.createPedido(dto);
+//        URI endereco = uriBuilder.path("/pedidos/{id}").buildAndExpand(pagamento.getId()).toUri();
 
-        return ResponseEntity.created(endereco).body(pagamento);
+        return ResponseEntity.accepted().body("Pedido criado com sucesso!");
     }
 
     @PutMapping("/update/{id}")

@@ -10,6 +10,7 @@ import br.com.thallysprojetos.ms_pedidos.configs.https.UsuariosClient;
 import br.com.thallysprojetos.ms_pedidos.exceptions.pedidos.PedidosNotFoundException;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -24,7 +25,7 @@ public class PedidosService {
     private final ProdutosClient produtosClient;
     private final DatabaseClient databaseClient;
     private final ModelMapper modelMapper;
-    private final org.springframework.amqp.rabbit.core.RabbitTemplate rabbitTemplate;
+    private final RabbitTemplate rabbitTemplate;
 
     public List<PedidosDTO> findAll() {
         return databaseClient.findAll();
@@ -110,6 +111,4 @@ public class PedidosService {
         rabbitTemplate.convertAndSend("pedidos.exchange", "pedidos.cancel", id);
     }
 
-    // A lógica de sincronização de itens deve ser ajustada para o novo contexto de DTOs.
-    // Ela não pode mais trabalhar com entidades.
 }
