@@ -28,19 +28,8 @@ public class ProdutosService {
                 .orElseThrow(ProdutosNotFoundException::new);
     }
 
-//    public ProdutosDTO createProduct(ProdutosDTO dto) {
-//        return databaseClient.createProduto(dto);
-//    }
-
     public ProdutosDTO createProduct(ProdutosDTO dto) {
-        System.out.println("[PRODUTOS] Enviando mensagem de criação de 1 produto para RabbitMQ: " +
-                "id=" + dto.getId() +
-                "titulo=" + dto.getTitulo() +
-                ", tipoProduto=" + dto.getTipoProduto() +
-                ", descricao=" + dto.getDescricao() +
-                ", preco=" + dto.getPreco() +
-                ", itemEstoque=" + dto.isItemEstoque() +
-                ", estoque=" + dto.getEstoque());
+        System.out.println(buildProdutoLogMessage("[PRODUTOS] Enviando mensagem de criação", null, dto));
 
         try {
             rabbitTemplate.convertAndSend("produtos.exchange", "produtos.create", dto);
@@ -52,22 +41,9 @@ public class ProdutosService {
         return dto;
     }
 
-//    public List<ProdutosDTO> createProducts(List<ProdutosDTO> dtos) {
-//        return dtos.stream()
-//                .map(databaseClient::createProduto)
-//                .collect(Collectors.toList());
-//    }
-
     public List<ProdutosDTO> createProducts(List<ProdutosDTO> dtos) {
         for (ProdutosDTO dto : dtos) {
-            System.out.println("[PRODUTOS] Enviando mensagem de criação de produto para RabbitMQ: " +
-                "id=" + dto.getId() +
-                ", titulo=" + dto.getTitulo() +
-                ", tipoProduto=" + dto.getTipoProduto() +
-                ", descricao=" + dto.getDescricao() +
-                ", preco=" + dto.getPreco() +
-                ", itemEstoque=" + dto.isItemEstoque() +
-                ", estoque=" + dto.getEstoque());
+            System.out.println(buildProdutoLogMessage("[PRODUTOS] Enviando mensagem de criação", null, dto));
             try {
                 rabbitTemplate.convertAndSend("produtos.exchange", "produtos.create", dto);
                 System.out.println("[PRODUTOS] Mensagem enviada com sucesso!");
@@ -79,29 +55,8 @@ public class ProdutosService {
         return dtos;
     }
 
-//    public ProdutosDTO updateProdutos(Long id, ProdutosDTO dto) {
-//        ProdutosDTO produtoExistente = databaseClient.findById(id)
-//                .orElseThrow(() -> new ProdutosNotFoundException("Produto não encontrado com o ID: " + id));
-//
-//        produtoExistente.setTitulo(dto.getTitulo());
-//        produtoExistente.setTipoProduto(dto.getTipoProduto());
-//        produtoExistente.setDescricao(dto.getDescricao());
-//        produtoExistente.setPreco(dto.getPreco());
-//        produtoExistente.setItemEstoque(dto.isItemEstoque());
-//        produtoExistente.setEstoque(dto.getEstoque());
-//
-//        return databaseClient.updateProduto(id, produtoExistente);
-//    }
-
     public ProdutosDTO updateProdutos(Long id, ProdutosDTO dto) {
-        System.out.println("[PRODUTOS] Enviando mensagem de atualização de produto para RabbitMQ: " +
-                "id=" + id +
-                ", titulo=" + dto.getTitulo() +
-                ", tipoProduto=" + dto.getTipoProduto() +
-                ", descricao=" + dto.getDescricao() +
-                ", preco=" + dto.getPreco() +
-                ", itemEstoque=" + dto.isItemEstoque() +
-                ", estoque=" + dto.getEstoque());
+        System.out.println(buildProdutoLogMessage("[PRODUTOS] Enviando mensagem de atualização", id, dto));
         try {
             rabbitTemplate.convertAndSend("produtos.exchange", "produtos.update", dto);
             System.out.println("[PRODUTOS] Mensagem de atualização enviada com sucesso!");
@@ -112,13 +67,6 @@ public class ProdutosService {
         return dto;
     }
 
-//    public void deleteProdutos(Long id) {
-//        if (!databaseClient.existsById(id)) {
-//            throw new ProdutosNotFoundException(String.format("Produtos não encontrado com o id '%s'.", id));
-//        }
-//        databaseClient.deleteProduto(id);
-//    }
-
     public void deleteProdutos(Long id) {
         System.out.println("[PRODUTOS] Enviando mensagem de deleção de produto para RabbitMQ. ID: " + id);
         try {
@@ -128,6 +76,17 @@ public class ProdutosService {
             System.out.println("[PRODUTOS] Erro ao enviar mensagem de deleção para RabbitMQ: " + e.getMessage());
             throw e;
         }
+    }
+
+    private String buildProdutoLogMessage(String prefixo, Long id, ProdutosDTO dto) {
+        return "[PRODUTOS] " + prefixo + " de produto para RabbitMQ: " +
+                "id=" + (id != null ? id : dto.getId()) +
+                ", titulo=" + dto.getTitulo() +
+                ", tipoProduto=" + dto.getTipoProduto() +
+                ", descricao=" + dto.getDescricao() +
+                ", preco=" + dto.getPreco() +
+                ", itemEstoque=" + dto.isItemEstoque() +
+                ", estoque=" + dto.getEstoque();
     }
 
 }

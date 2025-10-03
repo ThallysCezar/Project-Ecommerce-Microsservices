@@ -12,6 +12,8 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class RabbitMQConfig {
+
+    public static final String PRODUTOS_EXCHANGE = "produtos.exchange";
     public static final String PRODUTOS_CREATE_QUEUE = "produtos.create.queue";
     public static final String PRODUTOS_CREATE_DLQ = "produtos.create.dlq";
     public static final String PRODUTOS_CREATE_ROUTING_KEY = "produtos.create";
@@ -24,6 +26,7 @@ public class RabbitMQConfig {
     public static final String PRODUTOS_DELETE_DLQ = "produtos.delete.dlq";
     public static final String PRODUTOS_DELETE_ROUTING_KEY = "produtos.delete";
 
+
     @Bean
     public DirectExchange produtosExchange() {
         return ExchangeBuilder.directExchange(PRODUTOS_EXCHANGE).build();
@@ -32,7 +35,7 @@ public class RabbitMQConfig {
     @Bean
     public Queue produtosCreateQueue() {
         return QueueBuilder.durable(PRODUTOS_CREATE_QUEUE)
-            .withArgument("x-dead-letter-exchange", "")
+            .withArgument("x-dead-letter-exchange", PRODUTOS_EXCHANGE)
             .withArgument("x-dead-letter-routing-key", PRODUTOS_CREATE_DLQ)
             .build();
     }
@@ -52,7 +55,7 @@ public class RabbitMQConfig {
     @Bean
     public Queue produtosUpdateQueue() {
         return QueueBuilder.durable(PRODUTOS_UPDATE_QUEUE)
-            .withArgument("x-dead-letter-exchange", "")
+            .withArgument("x-dead-letter-exchange", PRODUTOS_EXCHANGE)
             .withArgument("x-dead-letter-routing-key", PRODUTOS_UPDATE_DLQ)
             .build();
     }
@@ -72,7 +75,7 @@ public class RabbitMQConfig {
     @Bean
     public Queue produtosDeleteQueue() {
         return QueueBuilder.durable(PRODUTOS_DELETE_QUEUE)
-            .withArgument("x-dead-letter-exchange", "")
+            .withArgument("x-dead-letter-exchange", PRODUTOS_EXCHANGE)
             .withArgument("x-dead-letter-routing-key", PRODUTOS_DELETE_DLQ)
             .build();
     }
@@ -88,8 +91,6 @@ public class RabbitMQConfig {
             .to(produtosExchange)
             .with(PRODUTOS_DELETE_ROUTING_KEY);
     }
-
-    public static final String PRODUTOS_EXCHANGE = "produtos.exchange";
 
     @Bean
     public RabbitAdmin criarRabbitAdmin(ConnectionFactory conn){

@@ -30,17 +30,16 @@ public class ProdutosController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<ProdutosDTO> createProduct(@Valid @RequestBody ProdutosDTO dto, UriComponentsBuilder uriBuilder) {
-    ProdutosDTO product = service.createProduct(dto);
-    return ResponseEntity.accepted().body(product);
+    public ResponseEntity<String> createProduct(@Valid @RequestBody ProdutosDTO dto, UriComponentsBuilder uriBuilder) {
+        service.createProduct(dto);
+        return ResponseEntity.accepted().body("Produto adicionado com sucesso!");
     }
 
     @PostMapping("/batch")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<List<ProdutosDTO>> createProduct(@Valid @RequestBody List<ProdutosDTO> dtos, UriComponentsBuilder uriBuilder) {
-        List<ProdutosDTO> produtos = service.createProducts(dtos);
-        return ResponseEntity.status(HttpStatus.ACCEPTED)
-            .body(produtos);
+    public ResponseEntity<String> createProduct(@Valid @RequestBody List<ProdutosDTO> dtos) {
+        service.createProducts(dtos);
+        return ResponseEntity.accepted().body("Produtos adicionados com sucesso!");
     }
 
     @PutMapping("/update/{id}")
