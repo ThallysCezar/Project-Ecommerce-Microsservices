@@ -18,13 +18,11 @@ public class PagamentosController {
 
     private final PagamentoPersistenceService service;
 
-    // LEITURA: findAll - Retorna Page<Pagamento> (Entidade)
     @GetMapping
     public ResponseEntity<List<Pagamento>> findAll() {
         return ResponseEntity.ok(service.findAll());
     }
 
-    // LEITURA: findById
     @GetMapping("/{id}")
     public ResponseEntity<Pagamento> findById(@PathVariable Long id) {
         return service.findById(id)
@@ -32,7 +30,6 @@ public class PagamentosController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // LEITURA: findByPedidoId
     @GetMapping("/pedido/{idPedido}")
     public ResponseEntity<Pagamento> findByPedidoId(@PathVariable Long idPedido) {
         return service.findByPedidoId(idPedido)
@@ -44,5 +41,5 @@ public class PagamentosController {
     public ResponseEntity<Boolean> existsById(@PathVariable Long id) {
         return ResponseEntity.ok(service.existsById(id));
     }
-    
+
 }

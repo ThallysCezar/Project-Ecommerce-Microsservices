@@ -44,7 +44,7 @@ public class UsuariosListener {
 
         try {
             Usuarios usuario = modelMapper.map(dto, Usuarios.class);
-            usuarioPersistenceService.update(usuario);
+            usuarioPersistenceService.save(usuario);
             System.out.println("[DATABASE] Usuário atualizado com sucesso: " + usuario);
         } catch (Exception e) {
             System.out.println("[DATABASE] Erro ao atualizar usuário: " + e.getMessage());

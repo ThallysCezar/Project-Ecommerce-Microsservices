@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class UsuariosMQConfig {
+
     public static final String USUARIOS_CREATE_DLQ = "usuarios.create.dlq";
     public static final String USUARIOS_UPDATE_DLQ = "usuarios.update.dlq";
     public static final String USUARIOS_DELETE_DLQ = "usuarios.delete.dlq";
@@ -35,20 +36,10 @@ public class UsuariosMQConfig {
         return factory;
     }
 
-//    @Bean
-//    public RabbitAdmin criarRabbitAdmin(org.springframework.amqp.rabbit.connection.ConnectionFactory conn){
-//        return new RabbitAdmin(conn);
-//    }
-//
-//    @Bean
-//    public ApplicationListener<ApplicationReadyEvent> inicializaAdmin(RabbitAdmin rabbitAdmin){
-//        return event -> rabbitAdmin.initialize();
-//    }
-
     @Bean
     public Queue usuariosQueue() {
         return QueueBuilder.durable(USUARIOS_QUEUE)
-                .withArgument("x-dead-letter-exchange", "")
+                .withArgument("x-dead-letter-exchange", USUARIOS_EXCHANGE)
                 .withArgument("x-dead-letter-routing-key", USUARIOS_CREATE_DLQ)
                 .build();
     }
@@ -63,19 +54,10 @@ public class UsuariosMQConfig {
         return BindingBuilder.bind(usuariosQueue()).to(usuariosExchange).with(USUARIOS_ROUTING_KEY);
     }
 
-//    @Bean
-//    public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory(ConnectionFactory connectionFactory) {
-//        SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
-//        factory.setConnectionFactory(connectionFactory);
-//        factory.setConcurrentConsumers(3);
-//        factory.setMaxConcurrentConsumers(10);
-//        return factory;
-//    }
-
     @Bean
     public Queue usuariosUpdateQueue() {
         return QueueBuilder.durable(USUARIOS_UPDATE_QUEUE)
-                .withArgument("x-dead-letter-exchange", "")
+                .withArgument("x-dead-letter-exchange", USUARIOS_EXCHANGE)
                 .withArgument("x-dead-letter-routing-key", USUARIOS_UPDATE_DLQ)
                 .build();
     }
@@ -90,7 +72,7 @@ public class UsuariosMQConfig {
     @Bean
     public Queue usuariosDeleteQueue() {
         return QueueBuilder.durable(USUARIOS_DELETE_QUEUE)
-                .withArgument("x-dead-letter-exchange", "")
+                .withArgument("x-dead-letter-exchange", USUARIOS_EXCHANGE)
                 .withArgument("x-dead-letter-routing-key", USUARIOS_DELETE_DLQ)
                 .build();
     }

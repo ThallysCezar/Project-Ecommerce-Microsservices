@@ -1,10 +1,13 @@
 package br.com.thallysprojetos.ms_database.services;
 
 import br.com.thallysprojetos.common_dtos.enums.StatusPedidos;
+import br.com.thallysprojetos.common_dtos.pagamento.PagamentoDTO;
+import br.com.thallysprojetos.common_dtos.pedido.PedidosDTO;
 import br.com.thallysprojetos.ms_database.entities.Pedidos;
 import br.com.thallysprojetos.ms_database.repositories.PedidosRepository;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,11 +16,22 @@ import java.util.Optional;
 @Service
 @AllArgsConstructor
 public class PedidoPersistenceService {
+    private final PagamentoPersistenceService pagamentoService;
+    private final ModelMapper modelMapper;
 
     private final PedidosRepository pedidosRepository;
 
-    public List<Pedidos> findAll() {
-        return pedidosRepository.findAll();
+    public List<PedidosDTO> findAll() {
+        List<Pedidos> pedidos = pedidosRepository.findAll();
+        return pedidos.stream().map(pedido -> {
+            PedidosDTO dto = modelMapper.map(pedido, PedidosDTO.class);
+            if (pedido.getPagamentoId() != null) {
+                pagamentoService.findById(pedido.getPagamentoId()).ifPresent(pagamento -> {
+                    dto.setPagamento(modelMapper.map(pagamento, PagamentoDTO.class));
+                });
+            }
+            return dto;
+        }).toList();
     }
 
     public Optional<Pedidos> findById(Long id) {
@@ -26,10 +40,6 @@ public class PedidoPersistenceService {
 
     public List<Pedidos> findByUsuarioId(Long usuarioId) {
         return pedidosRepository.findByUsuarioId(usuarioId);
-    }
-
-    public boolean existsById(Long id) {
-        return pedidosRepository.existsById(id);
     }
 
     @Transactional
@@ -52,36 +62,6 @@ public class PedidoPersistenceService {
         } else {
             System.out.println("[PedidoPersistenceService] Pedido não encontrado para confirmação: ID=" + id);
         }
-    }
-
-    @Transactional
-    public Pedidos updatePedido(Long id, br.com.thallysprojetos.common_dtos.pedido.PedidosDTO dto) {
-        Optional<Pedidos> pedidoOpt = pedidosRepository.findById(id);
-        if (pedidoOpt.isEmpty()) {
-            throw new RuntimeException("Pedido não encontrado");
-        }
-        Pedidos pedido = pedidoOpt.get();
-        pedido.setDataHora(dto.getDataHora());
-        pedido.setStatusPedidos(dto.getStatusPedidos());
-        pedido.setUsuarioId(dto.getUsuario().getId());
-        // Atualiza itens
-        pedido.getItens().clear();
-        if (dto.getItens() != null) {
-            dto.getItens().forEach(itemDTO -> {
-                var item = new br.com.thallysprojetos.ms_database.entities.ItemDoPedido();
-                item.setId(itemDTO.getId());
-                item.setQuantidade(itemDTO.getQuantidade());
-                item.setDescricao(itemDTO.getDescricao());
-                item.setProdutoId(itemDTO.getProduto().getId());
-                item.setPedido(pedido);
-                pedido.getItens().add(item);
-            });
-        }
-        // Atualiza pagamentoId se vier no DTO
-        if (dto.getPagamento() != null && dto.getPagamento().getId() != null) {
-            pedido.setPagamentoId(dto.getPagamento().getId());
-        }
-        return pedidosRepository.save(pedido);
     }
 
     @Transactional

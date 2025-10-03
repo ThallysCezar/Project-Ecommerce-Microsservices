@@ -11,23 +11,6 @@ import org.springframework.stereotype.Component;
 @Component
 @AllArgsConstructor
 public class PedidosListener {
-    @RabbitListener(queues = "pedidos.update.pagamento.queue", containerFactory = "pedidosRabbitListenerContainerFactory")
-    public void handleUpdatePagamentoPedido(br.com.thallysprojetos.common_dtos.pedido.PagamentoPedidoUpdateDTO dto) {
-        System.out.println("[DATABASE] Atualizando pedido com pagamento: PedidoID=" + dto.getPedidoId() + ", PagamentoID=" + dto.getPagamentoId());
-        try {
-            var pedidoOpt = pedidoPersistenceService.findById(dto.getPedidoId());
-            if (pedidoOpt.isPresent()) {
-                var pedido = pedidoOpt.get();
-                pedido.setPagamentoId(dto.getPagamentoId());
-                pedidoPersistenceService.save(pedido);
-            } else {
-                System.out.println("[DATABASE] Pedido não encontrado para atualização de pagamento: PedidoID=" + dto.getPedidoId());
-            }
-        } catch (Exception e) {
-            System.out.println("[DATABASE] ERRO ao atualizar pagamento do pedido: " + e.getMessage());
-            throw e;
-        }
-    }
 
     private final PedidoPersistenceService pedidoPersistenceService;
     private final ModelMapper modelMapper;
@@ -45,6 +28,24 @@ public class PedidosListener {
             pedidoPersistenceService.save(pedidos);
         } catch (Exception e) {
             System.out.println("[DATABASE] ERRO ao processar CRIAÇÃO de Pedido: " + e.getMessage());
+            throw e;
+        }
+    }
+
+    @RabbitListener(queues = "pedidos.update.pagamento.queue", containerFactory = "pedidosRabbitListenerContainerFactory")
+    public void handleUpdatePagamentoPedido(br.com.thallysprojetos.common_dtos.pedido.PagamentoPedidoUpdateDTO dto) {
+        System.out.println("[DATABASE] Atualizando pedido com pagamento: PedidoID=" + dto.getPedidoId() + ", PagamentoID=" + dto.getPagamentoId());
+        try {
+            var pedidoOpt = pedidoPersistenceService.findById(dto.getPedidoId());
+            if (pedidoOpt.isPresent()) {
+                var pedido = pedidoOpt.get();
+                pedido.setPagamentoId(dto.getPagamentoId());
+                pedidoPersistenceService.save(pedido);
+            } else {
+                System.out.println("[DATABASE] Pedido não encontrado para atualização de pagamento: PedidoID=" + dto.getPedidoId());
+            }
+        } catch (Exception e) {
+            System.out.println("[DATABASE] ERRO ao atualizar pagamento do pedido: " + e.getMessage());
             throw e;
         }
     }

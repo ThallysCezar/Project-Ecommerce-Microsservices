@@ -4,8 +4,6 @@ import br.com.thallysprojetos.ms_database.entities.Produtos;
 import br.com.thallysprojetos.ms_database.repositories.ProdutosRepository;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

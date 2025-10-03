@@ -1,6 +1,7 @@
 package br.com.thallysprojetos.ms_database.amqp.pagamentos;
 
 import br.com.thallysprojetos.common_dtos.pagamento.PagamentoDTO;
+import br.com.thallysprojetos.common_dtos.pedido.PagamentoPedidoUpdateDTO;
 import br.com.thallysprojetos.ms_database.entities.Pagamento;
 import br.com.thallysprojetos.ms_database.services.PagamentoPersistenceService;
 import lombok.AllArgsConstructor;
@@ -23,8 +24,8 @@ public class PagamentoListener {
         try {
             Pagamento pagamento = modelMapper.map(dto, Pagamento.class);
             Pagamento saved = produtosPersistenceService.save(pagamento);
-            // Enviar evento para atualizar o pedido com o pagamento criado
-            br.com.thallysprojetos.common_dtos.pedido.PagamentoPedidoUpdateDTO updateDTO = new br.com.thallysprojetos.common_dtos.pedido.PagamentoPedidoUpdateDTO(saved.getPedidoId(), saved.getId());
+
+            PagamentoPedidoUpdateDTO updateDTO = new PagamentoPedidoUpdateDTO(saved.getPedidoId(), saved.getId());
             rabbitTemplate.convertAndSend("pedidos.exchange", "pedidos.update.pagamento", updateDTO);
             if (saved.getStatus() != null && saved.getStatus().name().equalsIgnoreCase("CONFIRMADO")) {
                 System.out.println("[DATABASE] Pagamento confirmado, publicando evento para pedidos.confirm.queue: PedidoID=" + saved.getPedidoId());

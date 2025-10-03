@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class ProdutosMQConfig {
+
     public static final String PRODUTOS_CREATE_DLQ = "produtos.create.dlq";
     public static final String PRODUTOS_UPDATE_DLQ = "produtos.update.dlq";
     public static final String PRODUTOS_DELETE_DLQ = "produtos.delete.dlq";
@@ -38,7 +39,7 @@ public class ProdutosMQConfig {
     @Bean
     public Queue produtosQueue() {
         return QueueBuilder.durable(PRODUTOS_QUEUE)
-                .withArgument("x-dead-letter-exchange", "")
+                .withArgument("x-dead-letter-exchange", PRODUTOS_EXCHANGE)
                 .withArgument("x-dead-letter-routing-key", PRODUTOS_CREATE_DLQ)
                 .build();
     }
@@ -58,7 +59,7 @@ public class ProdutosMQConfig {
     @Bean
     public Queue produtosUpdateQueue() {
         return QueueBuilder.durable(PRODUTOS_UPDATE_QUEUE)
-                .withArgument("x-dead-letter-exchange", "")
+                .withArgument("x-dead-letter-exchange", PRODUTOS_EXCHANGE)
                 .withArgument("x-dead-letter-routing-key", PRODUTOS_UPDATE_DLQ)
                 .build();
     }
@@ -73,7 +74,7 @@ public class ProdutosMQConfig {
     @Bean
     public Queue produtosDeleteQueue() {
         return QueueBuilder.durable(PRODUTOS_DELETE_QUEUE)
-                .withArgument("x-dead-letter-exchange", "")
+                .withArgument("x-dead-letter-exchange", PRODUTOS_EXCHANGE)
                 .withArgument("x-dead-letter-routing-key", PRODUTOS_DELETE_DLQ)
                 .build();
 

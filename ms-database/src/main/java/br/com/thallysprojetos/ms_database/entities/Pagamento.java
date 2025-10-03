@@ -1,7 +1,7 @@
 package br.com.thallysprojetos.ms_database.entities;
 
-import br.com.thallysprojetos.ms_database.entities.enums.StatusPagamento;
-import br.com.thallysprojetos.ms_database.entities.enums.TipoFormaPagamento;
+import br.com.thallysprojetos.common_dtos.enums.StatusPagamento;
+import br.com.thallysprojetos.common_dtos.enums.TipoFormaPagamento;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;

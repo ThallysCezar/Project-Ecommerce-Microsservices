@@ -18,8 +18,6 @@ public class UsuariosController {
 
     private final UsuariosPersistenceService service;
 
-    // --- MÉTODOS DE LEITURA (Usados pelo FeignClient do ms-usuarios) ---
-
     @GetMapping
     public ResponseEntity<List<Usuarios>> findAll() {
         return ResponseEntity.ok(service.findAll());
@@ -38,8 +36,6 @@ public class UsuariosController {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
-
-    // --- MÉTODOS DE SUPORTE (Usados pelo FeignClient) ---
 
     @GetMapping("/{id}/exists")
     public ResponseEntity<Boolean> existsById(@PathVariable Long id) {
