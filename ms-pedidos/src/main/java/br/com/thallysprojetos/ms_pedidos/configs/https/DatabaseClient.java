@@ -20,4 +20,7 @@ public interface DatabaseClient {
     @GetMapping("/pedidos/usuarios/id")
     List<PedidosDTO> findByUsuarioId(@PathVariable("id") Long id);
 
+    @GetMapping("/pedidos/usuarios/{usuarioId}/pendentes")
+    List<PedidosDTO> findPendingByUsuarioId(@PathVariable("usuarioId") Long usuarioId);
+
 }

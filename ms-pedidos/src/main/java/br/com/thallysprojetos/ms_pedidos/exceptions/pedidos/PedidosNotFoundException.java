@@ -1,16 +1,13 @@
 package br.com.thallysprojetos.ms_pedidos.exceptions.pedidos;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
-
-public class PedidosNotFoundException extends ResponseStatusException {
+public class PedidosNotFoundException extends RuntimeException {
 
     public PedidosNotFoundException(){
-        super(HttpStatus.UNPROCESSABLE_ENTITY, "Pedido não encontrado com esse id");
+        super("Pedido não encontrado");
     }
 
     public PedidosNotFoundException(String message){
-        super(HttpStatus.UNPROCESSABLE_ENTITY, message);
+        super(message);
     }
 
 }

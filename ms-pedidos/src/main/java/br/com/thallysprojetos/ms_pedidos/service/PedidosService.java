@@ -7,8 +7,11 @@ import br.com.thallysprojetos.common_dtos.pedido.PedidosDTO;
 import br.com.thallysprojetos.ms_pedidos.configs.https.DatabaseClient;
 import br.com.thallysprojetos.ms_pedidos.configs.https.ProdutosClient;
 import br.com.thallysprojetos.ms_pedidos.configs.https.UsuariosClient;
+import br.com.thallysprojetos.ms_pedidos.exceptions.pedidos.PedidosAlreadyExistException;
 import br.com.thallysprojetos.ms_pedidos.exceptions.pedidos.PedidosNotFoundException;
+import feign.FeignException;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
@@ -17,6 +20,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @AllArgsConstructor
 public class PedidosService {
@@ -50,6 +54,7 @@ public class PedidosService {
     public PedidosDTO createPedido(PedidosDTO dto) {
         if (dto.getUsuario() != null && dto.getUsuario().getId() != null) {
             usuariosClient.findById(dto.getUsuario().getId());
+            verificationPendingOrders(dto.getUsuario().getId());
         } else {
             throw new RuntimeException("Usuário não fornecido.");
         }
@@ -109,6 +114,21 @@ public class PedidosService {
     public void cancelarPedido(Long id) {
         System.out.println("[PEDIDOS] Enviando comando de CANCELAMENTO de pedido para RabbitMQ: PedidoID=" + id);
         rabbitTemplate.convertAndSend("pedidos.exchange", "pedidos.cancel", id);
+    }
+
+    private void verificationPendingOrders(Long usuarioId) {
+        try {
+            List<PedidosDTO> pendingOrders = databaseClient.findPendingByUsuarioId(usuarioId);
+            if (!pendingOrders.isEmpty()) {
+                throw new PedidosAlreadyExistException(
+                        "O usuário já possui " + pendingOrders.size() + 
+                        " pedido(s) pendente(s). Finalize-o(s) antes de criar um novo pedido."
+                );
+            }
+        } catch (FeignException.NotFound e) {
+            // Nenhum pedido pendente encontrado = pode criar novo pedido! ✅
+            log.info("Nenhum pedido pendente encontrado para o usuário ID {}. Validação passou com sucesso.", usuarioId);
+        }
     }
 
 }

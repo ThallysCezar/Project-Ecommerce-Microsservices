@@ -1,16 +1,13 @@
 package br.com.thallysprojetos.ms_pedidos.exceptions.pedidos;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
-
-public class PedidosException extends ResponseStatusException {
+public class PedidosException extends RuntimeException {
 
     public PedidosException(){
-        super(HttpStatus.INTERNAL_SERVER_ERROR, "Erro geral model");
+        super("Erro ao processar pedido");
     }
 
     public PedidosException(String message){
-        super(HttpStatus.INTERNAL_SERVER_ERROR, message);
+        super(message);
     }
 
 }
