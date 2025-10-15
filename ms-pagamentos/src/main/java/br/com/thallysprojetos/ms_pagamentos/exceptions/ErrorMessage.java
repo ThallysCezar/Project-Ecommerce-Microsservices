@@ -8,6 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,6 +17,7 @@ import java.util.Map;
 @ToString
 public class ErrorMessage {
 
+    private String timestamp;
     private String path;
     private String method;
     private int status;
@@ -28,6 +31,7 @@ public class ErrorMessage {
     }
 
     public ErrorMessage(HttpServletRequest request, HttpStatus status, String message) {
+        this.timestamp = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
         this.path = request.getRequestURI();
         this.method = request.getMethod();
         this.status = status.value();
@@ -36,15 +40,16 @@ public class ErrorMessage {
     }
 
     public ErrorMessage(HttpServletRequest request, HttpStatus status, String message, BindingResult result) {
+        this.timestamp = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
         this.path = request.getRequestURI();
         this.method = request.getMethod();
         this.status = status.value();
         this.statusText = status.getReasonPhrase();
         this.message = message;
-        adErrors(result);
+        addErrors(result);
     }
 
-    private void adErrors(BindingResult result) {
+    private void addErrors(BindingResult result) {
         this.errors = new HashMap<>();
         for (FieldError fieldError : result.getFieldErrors()) {
             this.errors.put(fieldError.getField(), fieldError.getDefaultMessage());

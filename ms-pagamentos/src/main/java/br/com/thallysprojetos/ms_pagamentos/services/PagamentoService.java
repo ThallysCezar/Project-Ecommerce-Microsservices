@@ -3,14 +3,19 @@ package br.com.thallysprojetos.ms_pagamentos.services;
 import br.com.thallysprojetos.common_dtos.enums.StatusPagamento;
 import br.com.thallysprojetos.common_dtos.pagamento.PagamentoDTO;
 import br.com.thallysprojetos.ms_pagamentos.configs.http.DatabaseClient;
+import br.com.thallysprojetos.ms_pagamentos.exceptions.pagamento.PagamentoAlreadyExistException;
 import br.com.thallysprojetos.ms_pagamentos.exceptions.pagamento.PagamentoNotFoundException;
+import feign.FeignException;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
+@Slf4j
 @Service
 @AllArgsConstructor
 public class PagamentoService {
@@ -36,6 +41,8 @@ public class PagamentoService {
     }
 
     public PagamentoDTO createPayment(PagamentoDTO dto) {
+        verificationExistingPaymentForPedido(dto.getPedidoId());
+        
         dto.setStatus(StatusPagamento.CRIADO);
 
         rabbitTemplate.convertAndSend("pagamentos.exchange", "pagamentos.create", dto);
@@ -112,6 +119,22 @@ public class PagamentoService {
                 ", codigoDeBarrasBoleto=" + pagamentoExistente.getCodigoDeBarrasBoleto() +
                 ", chavePix=" + pagamentoExistente.getChavePix());
         return pagamentoExistente;
+    }
+
+    private void verificationExistingPaymentForPedido(Long pedidoId) {
+        try {
+            Optional<PagamentoDTO> existingPayment = databaseClient.findByPedidoId(pedidoId);
+            if (existingPayment.isPresent() && 
+                (existingPayment.get().getStatus() == StatusPagamento.CONFIRMADO || 
+                 existingPayment.get().getStatus() == StatusPagamento.PROCESSADO)) {
+                throw new PagamentoAlreadyExistException(
+                        "Já existe um pagamento aprovado/processado para o pedido ID: " + pedidoId
+                );
+            }
+        } catch (FeignException.NotFound e) {
+            // Pedido sem pagamento = pode criar pagamento! ✅
+            log.info("Nenhum pagamento encontrado para o pedido ID {}. Validação passou com sucesso.", pedidoId);
+        }
     }
 
 }

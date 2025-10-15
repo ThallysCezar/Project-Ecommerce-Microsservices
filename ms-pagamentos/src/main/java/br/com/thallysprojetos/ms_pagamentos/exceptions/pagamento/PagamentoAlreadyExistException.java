@@ -1,16 +1,13 @@
 package br.com.thallysprojetos.ms_pagamentos.exceptions.pagamento;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
-
-public class PagamentoAlreadyExistException extends ResponseStatusException {
+public class PagamentoAlreadyExistException extends RuntimeException {
 
     public PagamentoAlreadyExistException(){
-        super(HttpStatus.CONFLICT, "Já existe um usuário com esse email");
+        super("Já existe um pagamento com esse identificador");
     }
 
     public PagamentoAlreadyExistException(String message){
-        super(HttpStatus.CONFLICT, message);
+        super(message);
     }
 
 }
