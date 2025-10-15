@@ -1,16 +1,13 @@
 package br.com.thallysprojetos.ms_produtos.exceptions.produtos;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
-
-public class ProdutosException extends ResponseStatusException {
+public class ProdutosException extends RuntimeException {
 
     public ProdutosException(){
-        super(HttpStatus.INTERNAL_SERVER_ERROR, "Erro geral model");
+        super("Erro ao processar produto");
     }
 
     public ProdutosException(String message){
-        super(HttpStatus.INTERNAL_SERVER_ERROR, message);
+        super(message);
     }
 
 }

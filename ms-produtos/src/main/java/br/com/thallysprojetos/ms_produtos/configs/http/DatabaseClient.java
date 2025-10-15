@@ -17,4 +17,7 @@ public interface DatabaseClient {
     @GetMapping("/produtos/{id}")
     Optional<ProdutosDTO> findById(@PathVariable("id") Long id);
 
+    @GetMapping("/produtos/titulo/{titulo}")
+    Optional<ProdutosDTO> findByTitulo(@PathVariable("titulo") String titulo);
+
 }

@@ -1,9 +1,11 @@
 package br.com.thallysprojetos.ms_produtos.controllers;
 
 import br.com.thallysprojetos.common_dtos.produto.ProdutosDTO;
+import br.com.thallysprojetos.ms_produtos.responses.ProdutoResponse;
 import br.com.thallysprojetos.ms_produtos.services.ProdutosService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.hateoas.Link;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,16 +32,36 @@ public class ProdutosController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<String> createProduct(@Valid @RequestBody ProdutosDTO dto, UriComponentsBuilder uriBuilder) {
-        service.createProduct(dto);
-        return ResponseEntity.accepted().body("Produto adicionado com sucesso!");
+    public ResponseEntity<ProdutoResponse> createProduct(@Valid @RequestBody ProdutosDTO dto, UriComponentsBuilder uriBuilder) {
+        ProdutosDTO createdProduct = service.createProduct(dto);
+        
+        ProdutoResponse response = new ProdutoResponse(
+                createdProduct,
+                "Produto adicionado com sucesso!"
+        );
+        
+        // Link para o próximo passo: Criar pedido
+        response.add(Link.of("http://localhost:8082/ms-pedidos/pedidos", "criar-pedido")
+                .withTitle("POST - Criar um pedido com os produtos"));
+        
+        return ResponseEntity.accepted().body(response);
     }
 
     @PostMapping("/batch")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<String> createProduct(@Valid @RequestBody List<ProdutosDTO> dtos) {
-        service.createProducts(dtos);
-        return ResponseEntity.accepted().body("Produtos adicionados com sucesso!");
+    public ResponseEntity<ProdutoResponse> createProducts(@Valid @RequestBody List<ProdutosDTO> dtos) {
+        List<ProdutosDTO> createdProducts = service.createProducts(dtos);
+        
+        ProdutoResponse response = new ProdutoResponse(
+                createdProducts,
+                "Produtos adicionados com sucesso!"
+        );
+        
+        // Link para o próximo passo: Criar pedido
+        response.add(Link.of("http://localhost:8082/ms-pedidos/pedidos", "criar-pedido")
+                .withTitle("POST - Criar um pedido com os produtos"));
+        
+        return ResponseEntity.accepted().body(response);
     }
 
     @PutMapping("/update/{id}")
