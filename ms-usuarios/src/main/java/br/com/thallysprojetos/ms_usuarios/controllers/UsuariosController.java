@@ -1,14 +1,19 @@
 package br.com.thallysprojetos.ms_usuarios.controllers;
 
 import br.com.thallysprojetos.common_dtos.usuario.UsuariosDTO;
+import br.com.thallysprojetos.ms_usuarios.responses.UsuarioResponse;
 import br.com.thallysprojetos.ms_usuarios.services.UsuariosService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.hateoas.Link;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping("/usuarios")
@@ -33,9 +38,23 @@ public class UsuariosController {
     }
 
     @PostMapping
-    public ResponseEntity<String> createUser(@Valid @RequestBody UsuariosDTO dto) {
-        service.createUser(dto);
-        return ResponseEntity.accepted().body("Usuário recebido e será criado em breve (processamento assíncrono via RabbitMQ).");
+    public ResponseEntity<UsuarioResponse> createUser(@Valid @RequestBody UsuariosDTO dto) {
+        UsuariosDTO createdUser = service.createUser(dto);
+        
+        UsuarioResponse response = new UsuarioResponse(
+                createdUser, 
+                "Usuário recebido e será criado em breve (processamento assíncrono via RabbitMQ)."
+        );
+        
+        // Links para o próximo passo: Criar produtos
+        response.add(Link.of("http://localhost:8082/ms-produtos/produtos", "criar-produto-unico")
+                .withTitle("POST - Criar um único produto"));
+        response.add(Link.of("http://localhost:8082/ms-produtos/produtos/batch", "criar-produtos-lote")
+                .withTitle("POST - Criar múltiplos produtos de uma vez"));
+        response.add(Link.of("http://localhost:8082/ms-produtos/produtos", "listar-produtos")
+                .withTitle("GET - Ver todos os produtos disponíveis"));
+        
+        return ResponseEntity.accepted().body(response);
     }
 
     @PutMapping("/update/{id}")

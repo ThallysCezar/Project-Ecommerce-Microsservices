@@ -2,14 +2,19 @@ package br.com.thallysprojetos.ms_usuarios.services;
 
 import br.com.thallysprojetos.common_dtos.usuario.UsuariosDTO;
 import br.com.thallysprojetos.ms_usuarios.configs.http.DatabaseClient;
+import br.com.thallysprojetos.ms_usuarios.exceptions.usuarios.UsuarioAlreadyExistException;
 import br.com.thallysprojetos.ms_usuarios.exceptions.usuarios.UsuarioNotFoundException;
+import feign.FeignException;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
+@Slf4j
 @Service
 @AllArgsConstructor
 public class UsuariosService {
@@ -35,6 +40,8 @@ public class UsuariosService {
     }
 
     public UsuariosDTO createUser(UsuariosDTO dto) {
+        verificationExistingUser(dto.getId(), dto);
+
         System.out.println("[USUARIOS] Enviando mensagem de criação de usuário para RabbitMQ: " +
                 "nome=" + dto.getUserName() +
                 ", email=" + dto.getEmail() +
@@ -52,6 +59,10 @@ public class UsuariosService {
     public UsuariosDTO updateUsuarios(Long id, UsuariosDTO dto) {
         UsuariosDTO existingUser = databaseClient.findById(id)
                 .orElseThrow(() -> new UsuarioNotFoundException("Usuário não encontrado com o ID: " + id));
+
+        if (!existingUser.getEmail().equals(dto.getEmail())) {
+            verificationExistingUser(id, dto);
+        }
 
         existingUser.setUserName(dto.getUserName());
         existingUser.setEmail(dto.getEmail());
@@ -84,6 +95,19 @@ public class UsuariosService {
         } catch (Exception e) {
             System.out.println("[USUARIOS] Erro ao enviar mensagem de deleção para RabbitMQ: " + e.getMessage());
             throw e;
+        }
+    }
+
+    private void verificationExistingUser(Long id, UsuariosDTO dto) {
+        try {
+            Optional<UsuariosDTO> userWithEmail = databaseClient.findByEmail(dto.getEmail());
+            if (userWithEmail.isPresent() && !userWithEmail.get().getId().equals(id)) {
+                throw new UsuarioAlreadyExistException(
+                        "O email " + dto.getEmail() + " já está sendo usado por outro usuário"
+                );
+            }
+        } catch (FeignException.NotFound e) {
+            log.info("Email {} está disponível. Validação de duplicidade passou com sucesso.", dto.getEmail());
         }
     }
 
