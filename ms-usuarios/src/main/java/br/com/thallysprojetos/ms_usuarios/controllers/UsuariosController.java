@@ -8,12 +8,10 @@ import lombok.AllArgsConstructor;
 import org.springframework.hateoas.Link;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping("/usuarios")
@@ -23,22 +21,27 @@ public class UsuariosController {
     private final UsuariosService service;
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<UsuariosDTO>> findAll() { // <--- Retorna List<DTO>
         return ResponseEntity.ok().body(service.findAll());
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UsuariosDTO> findUserById(@Valid @PathVariable Long id) {
         return ResponseEntity.ok().body(service.findById(id));
     }
 
     @GetMapping("/email/{email}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UsuariosDTO> findUserByEmail(@Valid @PathVariable String email) {
         return ResponseEntity.ok().body(service.findByEmail(email));
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")  // Apenas ADMIN pode criar usuários diretamente
     public ResponseEntity<UsuarioResponse> createUser(@Valid @RequestBody UsuariosDTO dto) {
+        // ADMIN pode criar usuários com qualquer role
         UsuariosDTO createdUser = service.createUser(dto);
         
         UsuarioResponse response = new UsuarioResponse(
@@ -58,12 +61,14 @@ public class UsuariosController {
     }
 
     @PutMapping("/update/{id}")
+    @PreAuthorize("@ownershipValidator.isOwnerOrAdmin(#id)")
     public ResponseEntity<UsuariosDTO> updateUser(@Valid @PathVariable Long id, @RequestBody UsuariosDTO dto) {
         service.updateUsuarios(id, dto);
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/delete/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteUser(@Valid @PathVariable Long id) {
         service.deleteUsuarios(id);
