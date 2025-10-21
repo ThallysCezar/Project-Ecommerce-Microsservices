@@ -41,4 +41,5 @@ public class CustomUserDetailsService implements UserDetailsService {
             throw new UsernameNotFoundException("Erro ao buscar usuário", e);
         }
     }
+
 }

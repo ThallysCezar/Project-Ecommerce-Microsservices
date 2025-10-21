@@ -21,4 +21,5 @@ public class ProdutoResponse extends RepresentationModel<ProdutoResponse> {
         this.produtos = produtos;
         this.mensagem = mensagem;
     }
+
 }

@@ -10,4 +10,5 @@ public interface UsuariosClient {
     
     @GetMapping("/email/{email}")
     UsuariosDTO findByEmail(@PathVariable String email);
+
 }

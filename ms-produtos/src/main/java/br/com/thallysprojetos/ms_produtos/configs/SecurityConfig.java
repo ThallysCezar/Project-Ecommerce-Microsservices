@@ -35,19 +35,15 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        // Endpoints públicos
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/actuator/**").permitAll()
 
-                        // Endpoints de produtos - GET é público
                         .requestMatchers(HttpMethod.GET, "/produtos/**").permitAll()
 
-                        // Endpoints de produtos - POST, PUT, DELETE requerem ADMIN
                         .requestMatchers(HttpMethod.POST, "/produtos/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/produtos/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/produtos/**").hasRole("ADMIN")
 
-                        // Todos os outros endpoints requerem autenticação
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
@@ -76,4 +72,5 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
 }

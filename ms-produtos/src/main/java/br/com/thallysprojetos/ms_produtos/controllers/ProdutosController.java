@@ -22,13 +22,11 @@ public class ProdutosController {
     private final ProdutosService service;
 
     @GetMapping
-    // Público - todos podem ver produtos
     public ResponseEntity<List<ProdutosDTO>> findAll() {
         return ResponseEntity.ok().body(service.findAll());
     }
 
     @GetMapping("/{id}")
-    // Público - todos podem ver um produto
     public ResponseEntity<ProdutosDTO> findProductById(@Valid @PathVariable Long id) {
         return ResponseEntity.ok().body(service.findProductById(id));
     }
@@ -44,7 +42,6 @@ public class ProdutosController {
                 "Produto adicionado com sucesso!"
         );
         
-        // Link para o próximo passo: Criar pedido
         response.add(Link.of("http://localhost:8082/ms-pedidos/pedidos", "criar-pedido")
                 .withTitle("POST - Criar um pedido com os produtos"));
         
@@ -62,7 +59,6 @@ public class ProdutosController {
                 "Produtos adicionados com sucesso!"
         );
         
-        // Link para o próximo passo: Criar pedido
         response.add(Link.of("http://localhost:8082/ms-pedidos/pedidos", "criar-pedido")
                 .withTitle("POST - Criar um pedido com os produtos"));
         
