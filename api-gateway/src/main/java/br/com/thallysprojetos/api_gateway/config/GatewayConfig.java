@@ -16,17 +16,15 @@ public class GatewayConfig {
     @Bean
     public RouteLocator customRouteLocator(RouteLocatorBuilder builder) {
         return builder.routes()
-                // Rota para ms-usuarios (autenticação pública, outros endpoints protegidos)
                 .route("ms-usuarios", r -> r
                         .path("/ms-usuarios/**")
                         .filters(f -> f
-                                .stripPrefix(1) // Remove /ms-usuarios do path antes de encaminhar
+                                .stripPrefix(1)
                                 .filter(jwtAuthenticationFilter.apply(new JwtAuthenticationFilter.Config()))
                         )
-                        .uri("lb://ms-usuarios") // Load balanced via Eureka
+                        .uri("lb://ms-usuarios")
                 )
                 
-                // Rota para ms-produtos (GET público, POST/PUT/DELETE protegidos)
                 .route("ms-produtos", r -> r
                         .path("/ms-produtos/**")
                         .filters(f -> f
@@ -36,7 +34,6 @@ public class GatewayConfig {
                         .uri("lb://ms-produtos")
                 )
                 
-                // Rota para ms-pedidos (todos os endpoints protegidos com ownership)
                 .route("ms-pedidos", r -> r
                         .path("/ms-pedidos/**")
                         .filters(f -> f
@@ -46,7 +43,6 @@ public class GatewayConfig {
                         .uri("lb://ms-pedidos")
                 )
                 
-                // Rota para ms-pagamentos (apenas ADMIN)
                 .route("ms-pagamentos", r -> r
                         .path("/ms-pagamentos/**")
                         .filters(f -> f
@@ -56,7 +52,6 @@ public class GatewayConfig {
                         .uri("lb://ms-pagamentos")
                 )
                 
-                // Rota para ms-database (se necessário expor externamente)
                 .route("ms-database", r -> r
                         .path("/ms-database/**")
                         .filters(f -> f

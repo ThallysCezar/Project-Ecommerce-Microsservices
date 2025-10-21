@@ -30,7 +30,6 @@ public class GlobalExceptionHandler implements ErrorWebExceptionHandler {
         HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
         String message = "Erro interno do servidor";
 
-        // Customiza status e mensagem baseado no tipo de exceção
         if (ex.getMessage() != null) {
             if (ex.getMessage().contains("Token JWT")) {
                 status = HttpStatus.UNAUTHORIZED;
@@ -67,4 +66,5 @@ public class GlobalExceptionHandler implements ErrorWebExceptionHandler {
         DataBuffer buffer = exchange.getResponse().bufferFactory().wrap(bytes);
         return exchange.getResponse().writeWith(Mono.just(buffer));
     }
+
 }

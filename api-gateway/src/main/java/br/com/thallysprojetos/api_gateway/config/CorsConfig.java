@@ -16,19 +16,14 @@ public class CorsConfig {
     public CorsWebFilter corsWebFilter() {
         CorsConfiguration corsConfig = new CorsConfiguration();
         
-        // Permite todas as origens (em produção, especifique as origens permitidas)
         corsConfig.setAllowedOriginPatterns(Collections.singletonList("*"));
         
-        // Métodos HTTP permitidos
         corsConfig.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         
-        // Headers permitidos
         corsConfig.setAllowedHeaders(Arrays.asList("*"));
         
-        // Permite credenciais (cookies, authorization headers)
         corsConfig.setAllowCredentials(true);
         
-        // Headers expostos (que o frontend pode acessar)
         corsConfig.setExposedHeaders(Arrays.asList(
                 "Authorization",
                 "X-User-Email",
@@ -37,7 +32,6 @@ public class CorsConfig {
                 "X-Error-Message"
         ));
         
-        // Tempo máximo de cache da configuração CORS
         corsConfig.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
