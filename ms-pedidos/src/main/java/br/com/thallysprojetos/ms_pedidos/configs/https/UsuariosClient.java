@@ -8,10 +8,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 @FeignClient(name = "ms-usuarios", path = "/usuarios")
 public interface UsuariosClient {
 
-    @GetMapping("/{id}")  // path já tem /usuarios
+    @GetMapping("/{id}")
     UsuariosDTO findById(@PathVariable Long id);
 
-    @GetMapping("/email/{email}")  // path já tem /usuarios
+    @GetMapping("/email/{email}")
     UsuariosDTO findByEmail(@PathVariable String email);
 
 }

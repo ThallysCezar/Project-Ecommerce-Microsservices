@@ -13,4 +13,5 @@ public class PagamentoPedidoResponse extends RepresentationModel<PagamentoPedido
         this.pedidoId = pedidoId;
         this.mensagem = mensagem;
     }
+
 }

@@ -131,8 +131,8 @@ public class PedidosServiceImpl implements PedidosService {
             List<PedidosDTO> pendingOrders = databaseClient.findPendingByUsuarioId(usuarioId);
             if (!pendingOrders.isEmpty()) {
                 throw new PedidosAlreadyExistException(
-                        "O usuário já possui " + pendingOrders.size() + 
-                        " pedido(s) pendente(s). Finalize-o(s) antes de criar um novo pedido."
+                        "O usuário já possui " + pendingOrders.size() +
+                                " pedido(s) pendente(s). Finalize-o(s) antes de criar um novo pedido."
                 );
             }
         } catch (FeignException.NotFound e) {

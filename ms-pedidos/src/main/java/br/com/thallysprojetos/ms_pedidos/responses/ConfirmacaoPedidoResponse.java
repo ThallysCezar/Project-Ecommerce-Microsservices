@@ -15,4 +15,5 @@ public class ConfirmacaoPedidoResponse extends RepresentationModel<ConfirmacaoPe
         this.mensagem = mensagem;
         this.status = status;
     }
+
 }

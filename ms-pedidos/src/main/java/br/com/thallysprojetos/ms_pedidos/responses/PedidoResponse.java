@@ -14,4 +14,5 @@ public class PedidoResponse extends RepresentationModel<PedidoResponse> {
         this.pedido = pedido;
         this.mensagem = mensagem;
     }
+
 }

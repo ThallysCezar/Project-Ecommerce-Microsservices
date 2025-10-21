@@ -1,4 +1,4 @@
-package br.com.thallysprojetos.ms_pedidos.config;
+package br.com.thallysprojetos.ms_pedidos.configs;
 
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
