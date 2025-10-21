@@ -2,12 +2,16 @@ C:\Workspace\ProjetosPessoais\Projeto-Ecommerce-Microsservico\common-dtos\src\ma
 C:\Workspace\ProjetosPessoais\Projeto-Ecommerce-Microsservico\common-dtos\src\main\java\br\com\thallysprojetos\common_dtos\utils\ValidacaoPagamento.java
 C:\Workspace\ProjetosPessoais\Projeto-Ecommerce-Microsservico\common-dtos\src\main\java\br\com\thallysprojetos\common_dtos\enums\StatusPagamento.java
 C:\Workspace\ProjetosPessoais\Projeto-Ecommerce-Microsservico\common-dtos\src\main\java\br\com\thallysprojetos\common_dtos\pagamento\PagamentoDTO.java
+C:\Workspace\ProjetosPessoais\Projeto-Ecommerce-Microsservico\common-dtos\src\main\java\br\com\thallysprojetos\common_dtos\auth\LoginResponseDTO.java
 C:\Workspace\ProjetosPessoais\Projeto-Ecommerce-Microsservico\common-dtos\src\main\java\br\com\thallysprojetos\common_dtos\enums\StatusPedidos.java
 C:\Workspace\ProjetosPessoais\Projeto-Ecommerce-Microsservico\common-dtos\src\main\java\br\com\thallysprojetos\common_dtos\produto\ProdutosDTO.java
+C:\Workspace\ProjetosPessoais\Projeto-Ecommerce-Microsservico\common-dtos\src\main\java\br\com\thallysprojetos\common_dtos\auth\LoginRequestDTO.java
 C:\Workspace\ProjetosPessoais\Projeto-Ecommerce-Microsservico\common-dtos\src\main\java\br\com\thallysprojetos\common_dtos\pedido\PagamentoPedidoUpdateDTO.java
 C:\Workspace\ProjetosPessoais\Projeto-Ecommerce-Microsservico\common-dtos\src\main\java\br\com\thallysprojetos\common_dtos\utils\PagamentoValidator.java
 C:\Workspace\ProjetosPessoais\Projeto-Ecommerce-Microsservico\common-dtos\src\main\java\br\com\thallysprojetos\common_dtos\enums\TipoFormaPagamento.java
 C:\Workspace\ProjetosPessoais\Projeto-Ecommerce-Microsservico\common-dtos\src\main\java\br\com\thallysprojetos\common_dtos\pedido\ItemDoPedidoDTO.java
+C:\Workspace\ProjetosPessoais\Projeto-Ecommerce-Microsservico\common-dtos\src\main\java\br\com\thallysprojetos\common_dtos\usuario\Role.java
 C:\Workspace\ProjetosPessoais\Projeto-Ecommerce-Microsservico\common-dtos\src\main\java\br\com\thallysprojetos\common_dtos\pedido\ProdutoIdDTO.java
 C:\Workspace\ProjetosPessoais\Projeto-Ecommerce-Microsservico\common-dtos\src\main\java\br\com\thallysprojetos\common_dtos\pedido\PedidosDTO.java
 C:\Workspace\ProjetosPessoais\Projeto-Ecommerce-Microsservico\common-dtos\src\main\java\br\com\thallysprojetos\common_dtos\pedido\UsuarioIdDTO.java
+C:\Workspace\ProjetosPessoais\Projeto-Ecommerce-Microsservico\common-dtos\src\main\java\br\com\thallysprojetos\common_dtos\auth\RegisterRequestDTO.java

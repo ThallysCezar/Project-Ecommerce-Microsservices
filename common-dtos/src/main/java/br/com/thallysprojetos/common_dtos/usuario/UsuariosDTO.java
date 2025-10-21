@@ -6,6 +6,7 @@ public class UsuariosDTO {
     private String userName;
     private String email;
     private String password;
+    private Role role;
 
     public UsuariosDTO() {}
 
@@ -33,6 +34,12 @@ public class UsuariosDTO {
     public void setPassword(String password) {
         this.password = password;
     }
+    public Role getRole() {
+        return role;
+    }
+    public void setRole(Role role) {
+        this.role = role;
+    }
 
     @Override
     public String toString() {
@@ -41,6 +48,7 @@ public class UsuariosDTO {
                 ", userName='" + userName + '\'' +
                 ", email='" + email + '\'' +
                 ", password='" + password + '\'' +
+                ", role=" + role +
                 '}';
     }
 
