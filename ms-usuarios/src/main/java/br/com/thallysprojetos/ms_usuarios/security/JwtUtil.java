@@ -28,9 +28,6 @@ public class JwtUtil {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    /**
-     * Gera um token JWT para o usuário
-     */
     public String generateToken(String email, Long userId, Role role) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", userId);
@@ -38,9 +35,6 @@ public class JwtUtil {
         return createToken(claims, email);
     }
 
-    /**
-     * Cria o token com os claims e subject
-     */
     private String createToken(Map<String, Object> claims, String subject) {
         Date now = new Date();
         Date expirationDate = new Date(now.getTime() + expiration);
@@ -54,48 +48,30 @@ public class JwtUtil {
                 .compact();
     }
 
-    /**
-     * Extrai o email (subject) do token
-     */
     public String extractEmail(String token) {
         return extractClaim(token, Claims::getSubject);
     }
 
-    /**
-     * Extrai o userId do token
-     */
     public Long extractUserId(String token) {
         Claims claims = extractAllClaims(token);
         return claims.get("userId", Long.class);
     }
 
-    /**
-     * Extrai a role do token
-     */
     public Role extractRole(String token) {
         Claims claims = extractAllClaims(token);
         String roleName = claims.get("role", String.class);
         return Role.valueOf(roleName);
     }
 
-    /**
-     * Extrai a data de expiração do token
-     */
     public Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
     }
 
-    /**
-     * Extrai um claim específico do token
-     */
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
     }
 
-    /**
-     * Extrai todos os claims do token
-     */
     private Claims extractAllClaims(String token) {
         return Jwts.parser()
                 .verifyWith(getSigningKey())
@@ -104,24 +80,15 @@ public class JwtUtil {
                 .getPayload();
     }
 
-    /**
-     * Verifica se o token está expirado
-     */
     private Boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }
 
-    /**
-     * Valida o token verificando email e expiração
-     */
     public Boolean validateToken(String token, String email) {
         final String tokenEmail = extractEmail(token);
         return (tokenEmail.equals(email) && !isTokenExpired(token));
     }
 
-    /**
-     * Valida o token apenas verificando se não está expirado
-     */
     public Boolean validateToken(String token) {
         try {
             return !isTokenExpired(token);
@@ -129,4 +96,5 @@ public class JwtUtil {
             return false;
         }
     }
+
 }

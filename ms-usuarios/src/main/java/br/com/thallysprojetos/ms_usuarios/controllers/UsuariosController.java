@@ -39,9 +39,8 @@ public class UsuariosController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")  // Apenas ADMIN pode criar usuários diretamente
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UsuarioResponse> createUser(@Valid @RequestBody UsuariosDTO dto) {
-        // ADMIN pode criar usuários com qualquer role
         UsuariosDTO createdUser = service.createUser(dto);
         
         UsuarioResponse response = new UsuarioResponse(
@@ -49,7 +48,6 @@ public class UsuariosController {
                 "Usuário recebido e será criado em breve (processamento assíncrono via RabbitMQ)."
         );
         
-        // Links para o próximo passo: Criar produtos
         response.add(Link.of("http://localhost:8082/ms-produtos/produtos", "criar-produto-unico")
                 .withTitle("POST - Criar um único produto"));
         response.add(Link.of("http://localhost:8082/ms-produtos/produtos/batch", "criar-produtos-lote")

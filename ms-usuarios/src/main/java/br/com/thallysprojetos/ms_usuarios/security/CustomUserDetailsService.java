@@ -22,25 +22,25 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         log.info("Tentando carregar usuário com email: {}", email);
-        
+
         try {
             Optional<UsuariosDTO> usuarioOpt = databaseClient.findByEmail(email);
-            
+
             if (usuarioOpt.isEmpty()) {
                 log.error("Usuário não encontrado com email: {}", email);
                 throw new UsernameNotFoundException("Usuário não encontrado com email: " + email);
             }
-            
+
             UsuariosDTO usuario = usuarioOpt.get();
             log.info("Usuário encontrado: {} com role: {}", usuario.getEmail(), usuario.getRole());
-            
+
             return new CustomUserDetails(
                     usuario.getId(),
                     usuario.getEmail(),
                     usuario.getPassword(),
                     usuario.getRole()
             );
-            
+
         } catch (FeignException.NotFound e) {
             log.error("Usuário não encontrado com email: {}", email);
             throw new UsernameNotFoundException("Usuário não encontrado com email: " + email);
@@ -49,4 +49,5 @@ public class CustomUserDetailsService implements UserDetailsService {
             throw new UsernameNotFoundException("Erro ao buscar usuário", e);
         }
     }
+
 }

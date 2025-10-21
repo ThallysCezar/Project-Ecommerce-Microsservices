@@ -29,13 +29,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain
     ) throws ServletException, IOException {
-        
+
         final String authorizationHeader = request.getHeader("Authorization");
-        
+
         String email = null;
         String jwt = null;
 
-        // Extrai o token do header Authorization
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             jwt = authorizationHeader.substring(7);
             try {
@@ -46,7 +45,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         }
 
-        // Valida o token e autentica o usuário
         if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 
@@ -57,11 +55,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                 null,
                                 userDetails.getAuthorities()
                         );
-                
+
                 authenticationToken.setDetails(
                         new WebAuthenticationDetailsSource().buildDetails(request)
                 );
-                
+
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
                 log.debug("Usuário autenticado: {} com roles: {}", email, userDetails.getAuthorities());
             } else {
@@ -71,4 +69,5 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         filterChain.doFilter(request, response);
     }
+
 }

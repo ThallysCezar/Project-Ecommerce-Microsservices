@@ -35,9 +35,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public LoginResponseDTO login(LoginRequestDTO request) {
         log.info("Tentando autenticar usuário: {}", request.getEmail());
-        
+
         try {
-            // Autentica o usuário
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             request.getEmail(),
@@ -45,11 +44,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                     )
             );
 
-            // Busca os dados completos do usuário
             UsuariosDTO usuario = databaseClient.findByEmail(request.getEmail())
                     .orElseThrow(() -> new BadCredentialsException("Usuário não encontrado"));
 
-            // Gera o token JWT
             String token = jwtUtil.generateToken(
                     usuario.getEmail(),
                     usuario.getId(),
@@ -78,22 +75,19 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public UsuariosDTO register(RegisterRequestDTO request) {
         log.info("Tentando registrar novo usuário: {}", request.getEmail());
-        
-        // Verifica se o email já existe
+
         try {
             databaseClient.findByEmail(request.getEmail()).ifPresent(user -> {
                 throw new UsuarioAlreadyExistException("Email já cadastrado: " + request.getEmail());
             });
         } catch (FeignException.NotFound e) {
-            // Email não existe, pode continuar
             log.debug("Email disponível para registro: {}", request.getEmail());
         }
 
-        // Cria o DTO do usuário
         UsuariosDTO dto = new UsuariosDTO();
         dto.setUserName(request.getUserName());
         dto.setEmail(request.getEmail());
-        dto.setPassword(passwordEncoder.encode(request.getPassword())); // Criptografa a senha
+        dto.setPassword(passwordEncoder.encode(request.getPassword()));
         dto.setRole(request.getRole() != null ? request.getRole() : Role.USER);
 
         log.info("Enviando mensagem de criação de usuário para RabbitMQ: {}", dto.getEmail());
@@ -108,4 +102,5 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         return dto;
     }
+
 }

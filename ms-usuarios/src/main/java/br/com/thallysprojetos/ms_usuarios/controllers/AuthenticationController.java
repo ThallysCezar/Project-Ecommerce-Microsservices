@@ -20,12 +20,6 @@ public class AuthenticationController {
 
     private final AuthenticationService authenticationService;
 
-    /**
-     * Endpoint para login de usuários
-     * 
-     * @param request Credenciais de login (email e senha)
-     * @return Token JWT e informações do usuário
-     */
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDTO> login(@Valid @RequestBody LoginRequestDTO request) {
         log.info("Requisição de login recebida para: {}", request.getEmail());
@@ -33,16 +27,11 @@ public class AuthenticationController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * Endpoint para registro de novos usuários
-     * 
-     * @param request Dados do novo usuário
-     * @return Dados do usuário criado (processamento assíncrono)
-     */
     @PostMapping("/register")
     public ResponseEntity<UsuariosDTO> register(@Valid @RequestBody RegisterRequestDTO request) {
         log.info("Requisição de registro recebida para: {}", request.getEmail());
         UsuariosDTO usuario = authenticationService.register(request);
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(usuario);
     }
+
 }

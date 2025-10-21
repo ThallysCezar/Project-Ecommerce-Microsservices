@@ -35,20 +35,17 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        // Endpoints públicos (sem autenticação necessária)
                         .requestMatchers("/auth/**").permitAll()  // Inclui /auth/register e /auth/login
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/actuator/**").permitAll()
-                        
-                        // Endpoints de usuários (requerem autenticação)
+
                         .requestMatchers(HttpMethod.POST, "/usuarios").hasRole("ADMIN")  // Apenas ADMIN pode criar diretamente
                         .requestMatchers(HttpMethod.GET, "/usuarios").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/usuarios/{id}").authenticated()
                         .requestMatchers(HttpMethod.GET, "/usuarios/email/{email}").authenticated()  // Qualquer autenticado (para Feign calls)
                         .requestMatchers(HttpMethod.PUT, "/usuarios/update/{id}").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/usuarios/delete/{id}").hasRole("ADMIN")
-                        
-                        // Todos os outros endpoints requerem autenticação
+
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
@@ -77,4 +74,5 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
 }

@@ -6,6 +6,9 @@ import br.com.thallysprojetos.common_dtos.auth.RegisterRequestDTO;
 import br.com.thallysprojetos.common_dtos.usuario.UsuariosDTO;
 
 public interface AuthenticationService {
+
     LoginResponseDTO login(LoginRequestDTO request);
+
     UsuariosDTO register(RegisterRequestDTO request);
+
 }

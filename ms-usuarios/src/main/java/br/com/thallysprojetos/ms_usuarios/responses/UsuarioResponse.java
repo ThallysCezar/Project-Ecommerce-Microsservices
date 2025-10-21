@@ -14,4 +14,5 @@ public class UsuarioResponse extends RepresentationModel<UsuarioResponse> {
         this.usuario = usuario;
         this.mensagem = mensagem;
     }
+
 }
