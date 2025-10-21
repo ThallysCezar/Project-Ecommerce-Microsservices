@@ -4,7 +4,6 @@ import br.com.thallysprojetos.common_dtos.pagamento.PagamentoDTO;
 
 import java.util.List;
 
-
 public interface PagamentoService {
     
     List<PagamentoDTO> findAll();

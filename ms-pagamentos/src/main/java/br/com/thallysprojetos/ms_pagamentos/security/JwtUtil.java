@@ -39,13 +39,7 @@ public class JwtUtil {
         Date now = new Date();
         Date expirationDate = new Date(now.getTime() + expiration);
 
-        return Jwts.builder()
-                .claims(claims)
-                .subject(subject)
-                .issuedAt(now)
-                .expiration(expirationDate)
-                .signWith(getSigningKey())
-                .compact();
+        return Jwts.builder().claims(claims).subject(subject).issuedAt(now).expiration(expirationDate).signWith(getSigningKey()).compact();
     }
 
     public String extractEmail(String token) {
@@ -73,11 +67,7 @@ public class JwtUtil {
     }
 
     private Claims extractAllClaims(String token) {
-        return Jwts.parser()
-                .verifyWith(getSigningKey())
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
+        return Jwts.parser().verifyWith(getSigningKey()).build().parseSignedClaims(token).getPayload();
     }
 
     private Boolean isTokenExpired(String token) {
@@ -96,4 +86,5 @@ public class JwtUtil {
             return false;
         }
     }
+
 }

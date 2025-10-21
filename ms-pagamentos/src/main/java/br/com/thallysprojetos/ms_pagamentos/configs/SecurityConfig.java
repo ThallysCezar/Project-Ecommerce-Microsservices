@@ -1,9 +1,10 @@
-package br.com.thallysprojetos.ms_pagamentos.security;
+package br.com.thallysprojetos.ms_pagamentos.configs;
 
+import br.com.thallysprojetos.ms_pagamentos.security.CustomUserDetailsService;
+import br.com.thallysprojetos.ms_pagamentos.security.JwtAuthenticationFilter;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -33,14 +34,11 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        // Endpoints públicos
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/actuator/**").permitAll()
                         
-                        // Todos os endpoints de pagamentos requerem ADMIN
                         .requestMatchers("/pagamentos/**").hasRole("ADMIN")
                         
-                        // Todos os outros endpoints requerem autenticação
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session

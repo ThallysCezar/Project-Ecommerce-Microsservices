@@ -32,22 +32,18 @@ public class PagamentoServiceImpl implements PagamentoService {
 
     @Override
     public PagamentoDTO findById(Long id) {
-        return databaseClient.findById(id)
-                .map(p -> modelMapper.map(p, PagamentoDTO.class))
-                .orElseThrow(PagamentoNotFoundException::new);
+        return databaseClient.findById(id).map(p -> modelMapper.map(p, PagamentoDTO.class)).orElseThrow(PagamentoNotFoundException::new);
     }
 
     @Override
     public PagamentoDTO findByPedidoId(Long idPedido) {
-        return databaseClient.findByPedidoId(idPedido)
-                .map(p -> modelMapper.map(p, PagamentoDTO.class))
-                .orElseThrow(() -> new PagamentoNotFoundException("Pagamento não encontrado para o pedido com ID: " + idPedido));
+        return databaseClient.findByPedidoId(idPedido).map(p -> modelMapper.map(p, PagamentoDTO.class)).orElseThrow(() -> new PagamentoNotFoundException("Pagamento não encontrado para o pedido com ID: " + idPedido));
     }
 
     @Override
     public PagamentoDTO createPayment(PagamentoDTO dto) {
         verificationExistingPaymentForPedido(dto.getPedidoId());
-        
+
         dto.setStatus(StatusPagamento.CRIADO);
 
         rabbitTemplate.convertAndSend("pagamentos.exchange", "pagamentos.create", dto);
@@ -86,8 +82,7 @@ public class PagamentoServiceImpl implements PagamentoService {
 
     @Override
     public void processarPagamento(Long id) {
-        PagamentoDTO pagamento = databaseClient.findById(id)
-                .orElseThrow(() -> new PagamentoNotFoundException("Pagamento não encontrado com o ID: " + id));
+        PagamentoDTO pagamento = databaseClient.findById(id).orElseThrow(() -> new PagamentoNotFoundException("Pagamento não encontrado com o ID: " + id));
 
         if (pagamento.getStatus().equals(StatusPagamento.CRIADO) || pagamento.getStatus().equals(StatusPagamento.PROCESSADO)) {
             pagamento.setStatus(StatusPagamento.CONFIRMADO);
@@ -100,8 +95,7 @@ public class PagamentoServiceImpl implements PagamentoService {
     }
 
     private PagamentoDTO getPagamentoExistente(Long id, PagamentoDTO dto) {
-        PagamentoDTO pagamentoExistente = databaseClient.findById(id)
-                .orElseThrow(() -> new PagamentoNotFoundException("Pagamento não encontrado com o ID: " + id));
+        PagamentoDTO pagamentoExistente = databaseClient.findById(id).orElseThrow(() -> new PagamentoNotFoundException("Pagamento não encontrado com o ID: " + id));
 
         if (dto.getValor() != null) {
             pagamentoExistente.setValor(dto.getValor());
@@ -115,32 +109,17 @@ public class PagamentoServiceImpl implements PagamentoService {
         pagamentoExistente.setCodigoDeBarrasBoleto(dto.getCodigoDeBarrasBoleto());
         pagamentoExistente.setChavePix(dto.getChavePix());
 
-        System.out.println("[USUARIOS] Enviando mensagem de atualização de usuário para RabbitMQ: " +
-                "id=" + pagamentoExistente.getId() +
-                "valor=" + pagamentoExistente.getValor() +
-                ", tipoPagamento=" + pagamentoExistente.getTipoPagamento() +
-                ", status=" + pagamentoExistente.getStatus() +
-                ", nomeTitularCartao=" + pagamentoExistente.getNomeTitularCartao() +
-                ", numeroCartao=" + pagamentoExistente.getNumeroCartao() +
-                ", expiracaoCartao=" + pagamentoExistente.getExpiracaoCartao() +
-                ", codigoCartao=" + pagamentoExistente.getCodigoCartao() +
-                ", codigoDeBarrasBoleto=" + pagamentoExistente.getCodigoDeBarrasBoleto() +
-                ", chavePix=" + pagamentoExistente.getChavePix());
+        System.out.println("[PAGAMENTO] Enviando mensagem de atualização de usuário para RabbitMQ: " + "id=" + pagamentoExistente.getId() + "valor=" + pagamentoExistente.getValor() + ", tipoPagamento=" + pagamentoExistente.getTipoPagamento() + ", status=" + pagamentoExistente.getStatus() + ", nomeTitularCartao=" + pagamentoExistente.getNomeTitularCartao() + ", numeroCartao=" + pagamentoExistente.getNumeroCartao() + ", expiracaoCartao=" + pagamentoExistente.getExpiracaoCartao() + ", codigoCartao=" + pagamentoExistente.getCodigoCartao() + ", codigoDeBarrasBoleto=" + pagamentoExistente.getCodigoDeBarrasBoleto() + ", chavePix=" + pagamentoExistente.getChavePix());
         return pagamentoExistente;
     }
 
     private void verificationExistingPaymentForPedido(Long pedidoId) {
         try {
             Optional<PagamentoDTO> existingPayment = databaseClient.findByPedidoId(pedidoId);
-            if (existingPayment.isPresent() && 
-                (existingPayment.get().getStatus() == StatusPagamento.CONFIRMADO || 
-                 existingPayment.get().getStatus() == StatusPagamento.PROCESSADO)) {
-                throw new PagamentoAlreadyExistException(
-                        "Já existe um pagamento aprovado/processado para o pedido ID: " + pedidoId
-                );
+            if (existingPayment.isPresent() && (existingPayment.get().getStatus() == StatusPagamento.CONFIRMADO || existingPayment.get().getStatus() == StatusPagamento.PROCESSADO)) {
+                throw new PagamentoAlreadyExistException("Já existe um pagamento aprovado/processado para o pedido ID: " + pedidoId);
             }
         } catch (FeignException.NotFound e) {
-            // Pedido sem pagamento = pode criar pagamento! ✅
             log.info("Nenhum pagamento encontrado para o pedido ID {}. Validação passou com sucesso.", pedidoId);
         }
     }

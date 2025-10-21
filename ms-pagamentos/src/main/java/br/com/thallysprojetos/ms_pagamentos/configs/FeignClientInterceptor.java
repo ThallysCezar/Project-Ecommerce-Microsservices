@@ -1,4 +1,4 @@
-package br.com.thallysprojetos.ms_pagamentos.config;
+package br.com.thallysprojetos.ms_pagamentos.configs;
 
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
