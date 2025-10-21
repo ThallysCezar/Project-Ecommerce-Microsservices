@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.hateoas.Link;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -21,16 +22,19 @@ public class ProdutosController {
     private final ProdutosService service;
 
     @GetMapping
+    // Público - todos podem ver produtos
     public ResponseEntity<List<ProdutosDTO>> findAll() {
         return ResponseEntity.ok().body(service.findAll());
     }
 
     @GetMapping("/{id}")
+    // Público - todos podem ver um produto
     public ResponseEntity<ProdutosDTO> findProductById(@Valid @PathVariable Long id) {
         return ResponseEntity.ok().body(service.findProductById(id));
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<ProdutoResponse> createProduct(@Valid @RequestBody ProdutosDTO dto, UriComponentsBuilder uriBuilder) {
         ProdutosDTO createdProduct = service.createProduct(dto);
@@ -48,6 +52,7 @@ public class ProdutosController {
     }
 
     @PostMapping("/batch")
+    @PreAuthorize("hasRole('ADMIN')")
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<ProdutoResponse> createProducts(@Valid @RequestBody List<ProdutosDTO> dtos) {
         List<ProdutosDTO> createdProducts = service.createProducts(dtos);
@@ -65,12 +70,14 @@ public class ProdutosController {
     }
 
     @PutMapping("/update/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ProdutosDTO> updateProduct(@Valid @PathVariable Long id, @RequestBody ProdutosDTO dto) {
         service.updateProdutos(id, dto);
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/delete/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteProduct(@Valid @PathVariable Long id) {
         service.deleteProdutos(id);
