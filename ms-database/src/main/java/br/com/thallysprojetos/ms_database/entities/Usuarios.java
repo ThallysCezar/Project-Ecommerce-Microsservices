@@ -1,5 +1,6 @@
 package br.com.thallysprojetos.ms_database.entities;
 
+import br.com.thallysprojetos.common_dtos.usuario.Role;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -17,5 +18,9 @@ public class Usuarios {
     private String userName;
     private String email;
     private String password;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role = Role.USER;  // Valor padrão: USER
 
 }

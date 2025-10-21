@@ -1,5 +1,6 @@
 package br.com.thallysprojetos.ms_database.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -32,6 +33,7 @@ public class ItemDoPedido {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pedido_id", nullable = false)
+    @JsonBackReference  // Previne referência circular (não serializa o pedido)
     private Pedidos pedido;
 
 }

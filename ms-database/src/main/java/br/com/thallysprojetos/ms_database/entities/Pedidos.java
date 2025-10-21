@@ -1,6 +1,7 @@
 package br.com.thallysprojetos.ms_database.entities;
 
 import br.com.thallysprojetos.common_dtos.enums.StatusPedidos;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -27,6 +28,7 @@ public class Pedidos {
     private StatusPedidos statusPedidos;
 
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference  // Previne referência circular
     private List<ItemDoPedido> itens = new ArrayList<>();
 
     @Column(name = "usuario_id")
