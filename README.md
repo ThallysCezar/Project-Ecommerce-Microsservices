@@ -91,62 +91,43 @@ Este projeto implementa uma **plataforma completa de e-commerce** utilizando **a
 
 ## 🏗️ Arquitetura do Sistema
 
+### Visão Geral da Arquitetura
+
+![Arquitetura do Sistema](./images/Arquitetura.jpeg)
+
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                              FRONTEND / CLIENTE                             │
-│                         (Web App, Mobile, etc.)                             │
-└────────────────────────────────┬────────────────────────────────────────────┘
-                                 │
-                                 │ HTTP/HTTPS + JWT Token
-                                 │
-                                 ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                        🌐 API GATEWAY (Port 8082)                           │
-│  ┌───────────────────────────────────────────────────────────────────────┐  │
-│  │ • JwtAuthenticationFilter - Valida tokens JWT                         │  │
-│  │ • Headers Propagation: X-User-Id, X-User-Role, X-User-Email          │  │
-│  │ • CORS Configuration                                                  │  │
-│  │ • Load Balancing via Eureka                                           │  │
-│  │ • Rate Limiting & Circuit Breaker                                     │  │
-│  └───────────────────────────────────────────────────────────────────────┘  │
-└────┬──────────────┬──────────────┬──────────────┬───────────────────────────┘
-     │              │              │              │
-     │              │              │              │
-     ▼              ▼              ▼              ▼
-┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────────┐
-│ USUARIOS │  │ PRODUTOS │  │ PEDIDOS  │  │ PAGAMENTOS   │
-│  :8083   │  │  :8084   │  │  :8085   │  │   :8086      │
-└────┬─────┘  └────┬─────┘  └────┬─────┘  └──────┬───────┘
-     │              │              │                │
-     │              │              │                │
-     ▼              ▼              ▼                ▼
-┌─────────────────────────────────────────────────────────┐
-│         📡 MESSAGE BROKER - RabbitMQ (Port 5672)        │
-│  • usuarios.criados      • produtos.atualizados         │
-│  • pedidos.novos         • pagamentos.processados       │
-└─────────────────────────────────────────────────────────┘
-     │              │              │                │
-     └──────────────┴──────────────┴────────────────┘
-                    │
-                    ▼
-┌─────────────────────────────────────────────────────────┐
-│        🗄️  MS-DATABASE (Port 8080)                      │
-│  • PostgreSQL Database                                  │
-│  • JPA Repositories                                     │
-│  • Entity Management (Usuarios, Produtos, Pedidos, etc.)│
-│  • RabbitMQ Listeners                                   │
-└─────────────────────────────────────────────────────────┘
-                    ▲
-                    │
-┌─────────────────────────────────────────────────────────┐
-│       🔍 EUREKA SERVER (Port 8081)                      │
-│  • Service Discovery & Registration                     │
-│  • Health Monitoring                                    │
-│  • Load Balancing Coordination                          │
-└─────────────────────────────────────────────────────────┘
+┌─────────────┐
+│   Cliente   │
+└──────┬──────┘
+       │ HTTP/REST
+       ▼
+┌─────────────────┐
+│  API Gateway    │ ◄─── JWT Authentication
+│  (Port 8082)    │ ◄─── CORS Configuration
+└────────┬────────┘
+         │
+         ├─── Eureka Service Discovery ───┐
+         │                                │
+    ┌────▼────────┬───────────┬──────────┬▼────────┐
+    │ ms-usuarios │ms-produtos│ms-pedidos│ms-pagam.│
+    └─────────────┴───────────┴──────────┴─────────┘
+         │            │           │           │
+         └────────────┴───────────┴───────────┘
+                      │
+              ┌───────▼────────┐
+              │   ms-database  │
+              └───────┬────────┘
+                      │
+              ┌───────▼────────┐
+              │   PostgreSQL   │
+              └────────────────┘
 ```
 
-### 📐 Fluxo de Comunicação
+### 📊 Fluxo de Comunicação
+
+### Fluxo de Processamento de Pedidos
+
+![Fluxograma do Sistema](./images/Fluxograma.jpeg)
 
 1. **Cliente → API Gateway**: Cliente envia requisição com JWT token
 2. **Gateway → Validação**: Gateway valida token e extrai informações do usuário
@@ -202,6 +183,25 @@ Este projeto implementa uma **plataforma completa de e-commerce** utilizando **a
 
 ---
 
+## 📋 Gestão de Projeto
+
+### 🗂️ Trello Board
+
+O projeto foi gerenciado utilizando **Trello** para organização de tarefas, acompanhamento de progresso e planejamento de sprints.
+
+**Quadros Utilizados:**
+
+| Coluna | Descrição |
+|--------|-----------|
+| 📝 **Backlog** | Funcionalidades planejadas |
+| 🚧 **Em Desenvolvimento** | Tarefas em andamento |
+| 🧪 **Em Testes** | Features sendo testadas |
+| ✅ **Concluído** | Funcionalidades finalizadas |
+| 🐛 **Bugs** | Problemas identificados |
+| 📚 **Documentação** | Docs e guias |
+
+---
+
 ## 🔧 Microserviços
 
 ### 1️⃣ API Gateway (Port 8082)
@@ -225,7 +225,7 @@ Este projeto implementa uma **plataforma completa de e-commerce** utilizando **a
 
 ---
 
-### 2️⃣ ms-usuarios (Porta interna: 8083)
+### 2️⃣ ms-usuarios
 **Responsabilidade**: Autenticação, autorização e gerenciamento de usuários
 
 **Funcionalidades**:
@@ -258,7 +258,7 @@ DELETE http://localhost:8082/ms-usuarios/usuarios/delete/{id}    # Deletar (ADMI
 
 ---
 
-### 3️⃣ ms-produtos (Porta interna: 8084)
+### 3️⃣ ms-produtos 
 **Responsabilidade**: Gerenciamento de catálogo de produtos
 
 **Funcionalidades**:
@@ -293,7 +293,7 @@ DELETE http://localhost:8082/ms-produtos/produtos/delete/{id}  # Deletar (ADMIN)
 
 ---
 
-### 4️⃣ ms-pedidos (Porta interna: 8085)
+### 4️⃣ ms-pedidos
 **Responsabilidade**: Gerenciamento de pedidos (orders)
 
 **Funcionalidades**:
@@ -370,7 +370,7 @@ DELETE http://localhost:8082/ms-pagamentos/pagamentos/delete/{id}       # Deleta
 
 ---
 
-### 6️⃣ ms-database (Porta interna: 8080)
+### 6️⃣ ms-database
 **Responsabilidade**: Persistência de dados e acesso ao banco PostgreSQL
 
 **Funcionalidades**:
@@ -387,12 +387,10 @@ DELETE http://localhost:8082/ms-pagamentos/pagamentos/delete/{id}       # Deleta
 - `Pagamento` (id, pedido, valor, tipoPagamento, status)
 
 **RabbitMQ Listeners**:
-```java
-@RabbitListener(queues = "usuarios.criados")
-@RabbitListener(queues = "produtos.criados")
-@RabbitListener(queues = "pedidos.novos")
-@RabbitListener(queues = "pagamentos.processados")
-```
+- `UsuariosListener`: Queues e DLQs.
+- `ProdutosListener`: Queues e DLQs.
+- `PedidosListener`: Queues e DLQs.
+- `PagamentoListener`: Queues e DLQs.
 
 **Comunicação**:
 - 📥 Consome mensagens de todos os microserviços
@@ -418,12 +416,19 @@ DELETE http://localhost:8082/ms-pagamentos/pagamentos/delete/{id}       # Deleta
 
 **Classes**:
 ```java
-- Role (enum: USER, ADMIN)
+- Role
 - UsuariosDTO
 - ProdutosDTO
 - PedidosDTO
 - PagamentoDTO
+- Enums
+  - StatusPagamento
+  - StatusPedidos
+  - TipoFormaPagamento
 - ItemDoPedidoDTO
+- PagamentoPedidoUpdateDTO
+- ProdutoIdDTO
+- UsuarioIdDTO
 - LoginRequestDTO
 - LoginResponseDTO
 - RegisterRequestDTO
@@ -1003,177 +1008,29 @@ public ResponseEntity<?> updatePedido(@PathVariable Long id) {
 
 ## 🔄 Fluxo de Dados
 
-### 📝 Fluxo Completo: Criação de Pedido
+### 📝 Ciclo Completo de Operação do E-commerce
 
-```
-1. Cliente faz requisição
-   POST /ms-pedidos/pedidos
-   Authorization: Bearer {token}
-   
-2. API Gateway valida token
-   • Extrai userId=1, role=USER
-   • Adiciona headers: X-User-Id: 1, X-User-Role: USER
-   • Roteia para ms-pedidos
-   
-3. ms-pedidos processa
-   • Valida autorização (@PreAuthorize)
-   • Busca dados do usuário via Feign (ms-usuarios)
-   • Publica "pedidos.novos" no RabbitMQ
-   • Retorna resposta com HATEOAS links
-   
-4. ms-database consome mensagem
-   • Listener RabbitMQ recebe "pedidos.novos"
-   • Persiste pedido no PostgreSQL
-   • Cria relacionamentos (itens, usuário)
-   
-5. Cliente recebe resposta
-   {
-     "pedido": {...},
-     "message": "Pedido criado!",
-     "_links": {
-       "processar-pagamento": {...}
-     }
-   }
+```mermaid
+graph TD
+    A[🏁 Início do Fluxo] --> B[📝 ms-usuarios: Registrar Usuário]
+    B --> C[🔑 ms-usuarios: Login Usuário]
+    C --> D[🎫 Obter Bearer Token JWT]
+    D --> E[📦 ms-produtos: Criar Produtos]
+    E --> F[🛒 ms-pedidos: Criar Pedido]
+    F --> G[💰 ms-pedidos: Confirmar Pagamento do Pedido]
+    G --> H[⏳ Status Pagamento: PROCESSADO]
+    H --> I[✅ ms-pagamentos: Confirmar Pagamento ADMIN]
+    I --> J[✅ Status Pagamento: CONFIRMADO]
+    J --> K[📋 ms-pedidos: Confirmar Pedido]
+    K --> L[✅ Status Pedido: CONFIRMADO]
+    L --> M[🏁 Fim do Fluxo]
 ```
 
-### 💰 Fluxo de Pagamento
+### 🔢 Passo a Passo Detalhado
 
+#### **1️⃣ Início do Fluxo**
 ```
-1. Cliente adiciona pagamento ao pedido
-   POST /ms-pedidos/pedidos/1/pagamento
-   
-2. ms-pedidos valida ownership
-   • Verifica se userId == pedido.usuario.id
-   • Ou se role == ADMIN
-   
-3. ms-pedidos publica evento
-   • Publica "pagamentos.processados" no RabbitMQ
-   
-4. ms-database persiste pagamento
-   • Listener consome mensagem
-   • Cria registro de Pagamento
-   • Associa ao Pedido
-   
-5. ms-pagamentos processa (assíncrono)
-   • Consome "pagamentos.processados"
-   • Executa lógica de processamento
-   • Atualiza status
-```
-
----
-
-## 🧪 Testes
-
-### 📖 Documentação de Testes
-
-O projeto inclui documentação completa para testes:
-
-- **[QUICK_START_TESTES.md](QUICK_START_TESTES.md)** - Guia rápido de início (5 minutos)
-- **[GUIA_TESTES_AUTENTICACAO.md](GUIA_TESTES_AUTENTICACAO.md)** - Guia completo de testes
-- **[EXEMPLOS_USO_TOKENS.md](EXEMPLOS_USO_TOKENS.md)** - Exemplos práticos com JWT
-
-### 🤖 Script Automatizado
-
-Execute todos os testes com um único comando:
-
-```powershell
-# Windows PowerShell
-.\test-authentication.ps1
-```
-
-O script testa:
-- ✅ Health check de todos os serviços
-- ✅ Registro de usuários (USER e ADMIN)
-- ✅ Login e geração de tokens
-- ✅ Criação de produtos
-- ✅ Criação de pedidos
-- ✅ Validação de ownership
-- ✅ Confirmação de pagamentos
-
-### 🔌 Testes com VS Code REST Client
-
-Use o arquivo `api-tests.http` para testar no VS Code:
-
-1. Instale a extensão **REST Client**
-2. Abra `api-tests.http`
-3. Clique em "Send Request" acima de cada requisição
-
-### 📋 Casos de Teste Recomendados
-
-#### 1. Teste de Autenticação
-
-```http
-### 1. Registrar USER
-POST http://localhost:8082/ms-usuarios/auth/register
-Content-Type: application/json
-
-{
-  "nome": "Teste User",
-  "email": "user@test.com",
-  "password": "123",
-  "role": "USER"
-}
-
-### 2. Registrar ADMIN
-POST http://localhost:8082/ms-usuarios/auth/register
-Content-Type: application/json
-
-{
-  "nome": "Teste Admin",
-  "email": "admin@test.com",
-  "password": "123",
-  "role": "ADMIN"
-}
-
-### 3. Login e salvar token
-@userToken = {{token do passo 1}}
-@adminToken = {{token do passo 2}}
-```
-
-#### 2. Teste de Autorização
-
-```http
-### USER tentando criar produto (DEVE FALHAR - 403)
-POST http://localhost:8082/ms-produtos/produtos
-Authorization: Bearer {{userToken}}
-Content-Type: application/json
-
-{
-  "nome": "Produto Teste",
-  "preco": 100
-}
-
-### ADMIN criando produto (DEVE FUNCIONAR)
-POST http://localhost:8082/ms-produtos/produtos
-Authorization: Bearer {{adminToken}}
-Content-Type: application/json
-
-{
-  "nome": "Produto Admin",
-  "preco": 200
-}
-```
-
-#### 3. Teste de Ownership
-
-```http
-### USER criando pedido próprio (DEVE FUNCIONAR)
-POST http://localhost:8082/ms-pedidos/pedidos
-Authorization: Bearer {{userToken}}
-Content-Type: application/json
-
-{
-  "usuario": {"id": 1},
-  "itens": [...]
-}
-
-### USER tentando ver pedido de outro (DEVE FALHAR - 403)
-GET http://localhost:8082/ms-pedidos/pedidos/999
-Authorization: Bearer {{userToken}}
-
-### ADMIN vendo pedido de qualquer um (DEVE FUNCIONAR)
-GET http://localhost:8082/ms-pedidos/pedidos/1
-Authorization: Bearer {{adminToken}}
+Cliente acessa a plataforma de e-commerce
 ```
 
 ---
@@ -1191,11 +1048,11 @@ Authorization: Bearer {{adminToken}}
 - [x] API Gateway
 - [x] HATEOAS links
 - [x] Documentação completa
+- [x] Swagger/OpenAPI documentation
 
 ### 🔄 Em Progresso
 
 - [ ] Testes unitários e de integração
-- [ ] Swagger/OpenAPI documentation
 - [ ] Docker Compose para ambiente completo
 - [ ] CI/CD pipeline (GitHub Actions)
 
@@ -1257,7 +1114,7 @@ Contribuições são bem-vindas! Para contribuir:
 
 ### 📝 Padrões de Commit
 
-Usamos [Conventional Commits](https://www.conventionalcommits.org/):
+Usei [Conventional Commits](https://www.conventionalcommits.org/):
 
 ```
 feat: Nova funcionalidade
@@ -1281,52 +1138,12 @@ Abra uma [Issue](https://github.com/ThallysCezar/Project-Ecommerce-Microsservice
 
 ---
 
-## 📄 Licença
-
-Este projeto está sob a licença **MIT**. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
-
-```
-MIT License
-
-Copyright (c) 2024 Thallys Cezar
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction...
-```
-
----
-
 ## 👨‍💻 Autor
 
 **Thallys Cezar**
 
 - GitHub: [@ThallysCezar](https://github.com/ThallysCezar)
-- LinkedIn: [Thallys Cezar](https://www.linkedin.com/in/thallysprojetos/)
-- Email: thallysprojetos@gmail.com
-
----
-
-## 🙏 Agradecimentos
-
-- Spring Team pela excelente framework
-- Netflix OSS pelo Eureka
-- Pivotal pelo RabbitMQ
-- Comunidade Java pelo suporte
-
----
-
-## 📞 Suporte
-
-**Documentação Adicional**:
-- **Eureka Dashboard**: http://localhost:8081
-- **RabbitMQ Management**: http://localhost:15672
-- **Spring Actuator**: http://localhost:8082/actuator
-
-**Troubleshooting**:
-- [QUICK_START_TESTES.md](QUICK_START_TESTES.md#troubleshooting)
-- [GUIA_TESTES_AUTENTICACAO.md](GUIA_TESTES_AUTENTICACAO.md)
-- [Issues no GitHub](https://github.com/ThallysCezar/Project-Ecommerce-Microsservices/issues)
+- LinkedIn: [Thallys Cezar](https://www.linkedin.com/in/thallyscezar/)
 
 ---
 
