@@ -1,13 +1,14 @@
-package br.com.thallysprojetos.ms_pedidos;
+package br.com.thallysprojetos.ms_produtos;
 
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
+import br.com.thallysprojetos.ms_produtos.services.ProdutosServiceImplTest;
+import org.junit.platform.suite.api.SelectClasses;
+import org.junit.platform.suite.api.Suite;
+import org.junit.platform.suite.api.SuiteDisplayName;
 
-@SpringBootTest
+@Suite
+@SelectClasses({
+		ProdutosServiceImplTest.class
+})
+@SuiteDisplayName("Conjunto dos testes unitários")
 class ProdutosApplicationTests {
-
-	@Test
-	void contextLoads() {
-	}
-
 }
