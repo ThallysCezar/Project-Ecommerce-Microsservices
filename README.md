@@ -16,6 +16,7 @@
 [Arquitetura](#-arquitetura-do-sistema) •
 [Tecnologias](#-stack-tecnológico) •
 [Instalação](#-instalação-e-configuração) •
+[Docker](#-docker-e-containerização) •
 [Endpoints](#-documentação-de-endpoints) •
 [Segurança](#-sistema-de-autenticação-e-autorização)
 
@@ -31,6 +32,7 @@
 - [Stack Tecnológico](#-stack-tecnológico)
 - [Microserviços](#-microserviços)
 - [Instalação e Configuração](#-instalação-e-configuração)
+- [Docker e Containerização](#-docker-e-containerização)
 - [Documentação de Endpoints](#-documentação-de-endpoints)
 - [Sistema de Autenticação](#-sistema-de-autenticação-e-autorização)
 - [Fluxo de Dados](#-fluxo-de-dados)
@@ -577,7 +579,82 @@ Aguarde todos os serviços se registrarem no Eureka (~1-2 minutos):
 
 ---
 
-## 📚 Documentação de Endpoints
+## � Docker e Containerização
+
+### 📦 Executar com Docker Compose (Recomendado)
+
+A forma mais rápida de rodar toda a aplicação é usando Docker Compose:
+
+```bash
+# Na raiz do projeto
+docker-compose up -d
+```
+
+Este comando irá:
+- ✅ Construir as imagens Docker de todos os microsserviços
+- ✅ Iniciar PostgreSQL e RabbitMQ automaticamente
+- ✅ Configurar a rede entre os containers
+- ✅ Aguardar a ordem correta de inicialização (health checks)
+
+### 🔍 Verificar Status dos Containers
+
+```bash
+# Ver todos os containers em execução
+docker-compose ps
+
+# Ver logs de todos os serviços
+docker-compose logs -f
+
+# Ver logs de um serviço específico
+docker-compose logs -f ms-usuarios
+```
+
+### 🛑 Parar os Serviços
+
+```bash
+# Parar todos os containers
+docker-compose down
+
+# Parar e remover volumes (limpar banco de dados)
+docker-compose down -v
+```
+
+### 📋 Estrutura Docker
+
+Cada microsserviço possui seu próprio `Dockerfile`:
+
+```
+├── api-gateway/Dockerfile
+├── ms-usuarios/Dockerfile
+├── ms-produtos/Dockerfile
+├── ms-pedidos/Dockerfile
+├── ms-pagamentos/Dockerfile
+├── ms-database/Dockerfile
+├── server/Dockerfile (Eureka)
+├── ms-configs/Dockerfile (Config Server)
+└── docker-compose.yml (Orquestração completa)
+```
+
+### 🌐 Acessar a Aplicação
+
+Após ~2 minutos, todos os serviços estarão disponíveis:
+
+- **API Gateway**: http://localhost:8082
+- **Eureka Dashboard**: http://localhost:8081
+- **RabbitMQ Management**: http://localhost:15672 (guest/guest)
+- **PostgreSQL**: localhost:5432
+
+### 📖 Documentação Docker Completa
+
+Para mais detalhes sobre:
+- Construção de imagens individuais
+- Variáveis de ambiente
+- Troubleshooting
+- Configurações avançadas
+  
+---
+
+## �📚 Documentação de Endpoints
 
 ### 🔓 Autenticação (Endpoints Públicos)
 
@@ -1052,8 +1129,8 @@ Cliente acessa a plataforma de e-commerce
 
 ### 🔄 Em Progresso
 
-- [ ] Testes unitários e de integração
-- [ ] Docker Compose para ambiente completo
+- [x] Testes unitários e de integração (59 testes implementados)
+- [x] Docker Compose para ambiente completo
 - [ ] CI/CD pipeline (GitHub Actions)
 
 ### 📋 Próximas Funcionalidades
