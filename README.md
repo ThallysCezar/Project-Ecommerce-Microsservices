@@ -1131,7 +1131,16 @@ Cliente acessa a plataforma de e-commerce
 
 - [x] Testes unitários e de integração (59 testes implementados)
 - [x] Docker Compose para ambiente completo
-- [ ] CI/CD pipeline (GitHub Actions)
+- [ ] **CI/CD Pipeline (GitHub Actions)** ⚠️ **[PENDENTE]**
+  - Integração Contínua (build, testes, code quality)
+  - Deploy Contínuo para ambientes de staging e produção
+  - Automação de releases
+- [ ] **Kubernetes Deployment** ⚠️ **[PENDENTE]**
+  - Manifests YAML para pods, services e deployments
+  - Configuração de auto-scaling horizontal
+  - Health checks e liveness/readiness probes
+  - ConfigMaps e Secrets para configurações
+  - Ingress controller para roteamento
 
 ### 📋 Próximas Funcionalidades
 
