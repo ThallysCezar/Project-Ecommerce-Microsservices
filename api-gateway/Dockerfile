@@ -1,24 +1,25 @@
 FROM eclipse-temurin:17-jdk-alpine AS build
 
-WORKDIR /app
+WORKDIR /workspace
 
-# Copy parent pom and common-dtos first (for better layer caching)
-COPY ../common-dtos/pom.xml ../common-dtos/pom.xml
-COPY ../common-dtos/src ../common-dtos/src
+# Copy maven wrapper
+COPY api-gateway/mvnw .
+COPY api-gateway/.mvn .mvn
 
-# Copy maven wrapper and pom.xml
-COPY mvnw .
-COPY .mvn .mvn
-COPY pom.xml .
+# Copy custom Maven settings
+COPY maven-settings.xml /root/.m2/settings.xml
 
-# Download dependencies
-RUN ./mvnw dependency:go-offline -B
+# Copy api-gateway pom first (better layer caching)
+COPY api-gateway/pom.xml api-gateway/
 
 # Copy source code
-COPY src ./src
+COPY api-gateway/src api-gateway/src
 
-# Build the application
-RUN ./mvnw clean package -DskipTests
+# Build api-gateway (downloads dependencies automatically)
+WORKDIR /workspace/api-gateway
+RUN chmod +x ../mvnw && \
+    ../mvnw clean package -DskipTests -B || \
+    ../mvnw clean package -DskipTests -B
 
 # Runtime stage
 FROM eclipse-temurin:17-jre-alpine
@@ -26,7 +27,7 @@ FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 
 # Copy jar from build stage
-COPY --from=build /app/target/*.jar app.jar
+COPY --from=build /workspace/api-gateway/target/*.jar app.jar
 
 # Create non-root user
 RUN addgroup -S spring && adduser -S spring -G spring

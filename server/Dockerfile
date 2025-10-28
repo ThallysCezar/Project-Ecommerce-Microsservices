@@ -1,20 +1,25 @@
 FROM eclipse-temurin:17-jdk-alpine AS build
 
-WORKDIR /app
+WORKDIR /workspace
 
-# Copy maven wrapper and pom.xml
-COPY mvnw .
-COPY .mvn .mvn
-COPY pom.xml .
+# Copy maven wrapper
+COPY server/mvnw .
+COPY server/.mvn .mvn
 
-# Download dependencies
-RUN ./mvnw dependency:go-offline -B
+# Copy custom Maven settings
+COPY maven-settings.xml /root/.m2/settings.xml
+
+# Copy server pom first (better layer caching)
+COPY server/pom.xml server/
 
 # Copy source code
-COPY src ./src
+COPY server/src server/src
 
-# Build the application
-RUN ./mvnw clean package -DskipTests
+# Build server (downloads dependencies automatically)
+WORKDIR /workspace/server
+RUN chmod +x ../mvnw && \
+    ../mvnw clean package -DskipTests -B || \
+    ../mvnw clean package -DskipTests -B
 
 # Runtime stage
 FROM eclipse-temurin:17-jre-alpine
@@ -22,7 +27,7 @@ FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 
 # Copy jar from build stage
-COPY --from=build /app/target/*.jar app.jar
+COPY --from=build /workspace/server/target/*.jar app.jar
 
 # Create non-root user
 RUN addgroup -S spring && adduser -S spring -G spring

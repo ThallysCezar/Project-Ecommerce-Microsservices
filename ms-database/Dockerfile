@@ -1,20 +1,36 @@
 FROM eclipse-temurin:17-jdk-alpine AS build
 
-WORKDIR /app
+WORKDIR /workspace
 
-# Copy maven wrapper and pom.xml
-COPY mvnw .
-COPY .mvn .mvn
-COPY pom.xml .
+# Copy maven wrapper
+COPY ms-database/mvnw .
+COPY ms-database/.mvn .mvn
 
-# Download dependencies
-RUN ./mvnw dependency:go-offline -B
+# Copy custom Maven settings (mirror brasileiro)
+COPY maven-settings.xml /root/.m2/settings.xml
+
+# Copy common-dtos (dependency)
+COPY common-dtos common-dtos/
+
+# Install common-dtos in local maven repo
+WORKDIR /workspace/common-dtos
+RUN chmod +x ../mvnw && \
+    ../mvnw clean install -DskipTests || \
+    ../mvnw clean install -DskipTests || \
+    ../mvnw clean install -DskipTests
+
+# Copy ms-database pom first (better layer caching)
+WORKDIR /workspace
+COPY ms-database/pom.xml ms-database/
 
 # Copy source code
-COPY src ./src
+COPY ms-database/src ms-database/src
 
-# Build the application
-RUN ./mvnw clean package -DskipTests
+# Build ms-database (downloads dependencies automatically)
+WORKDIR /workspace/ms-database
+RUN chmod +x ../mvnw && \
+    ../mvnw clean package -DskipTests -B || \
+    ../mvnw clean package -DskipTests -B
 
 # Runtime stage
 FROM eclipse-temurin:17-jre-alpine
@@ -22,7 +38,7 @@ FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 
 # Copy jar from build stage
-COPY --from=build /app/target/*.jar app.jar
+COPY --from=build /workspace/ms-database/target/*.jar app.jar
 
 # Create non-root user
 RUN addgroup -S spring && adduser -S spring -G spring
