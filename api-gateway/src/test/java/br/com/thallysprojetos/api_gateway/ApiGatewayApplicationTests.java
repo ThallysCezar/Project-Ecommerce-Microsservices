@@ -1,10 +1,10 @@
-package br.com.thallysprojetos.gateway;
+package br.com.thallysprojetos.api_gateway;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
-class DatabaseApplicationTests {
+@SpringBootTest(classes = ApiGatewayApplication.class)
+class ApiGatewayApplicationTests {
 
 	@Test
 	void contextLoads() {
