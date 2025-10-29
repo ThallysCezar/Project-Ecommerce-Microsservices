@@ -1,0 +1,92 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ms-database
+  namespace: ecommerce
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ms-database
+  template:
+    metadata:
+      labels:
+        app: ms-database
+    spec:
+      containers:
+      - name: ms-database
+        image: thallyscezar/ecommerce-ms-database:1.0.0
+        ports:
+        - containerPort: 8080
+        env:
+        - name: SERVER_PORT
+          value: "8080"
+        - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+          valueFrom:
+            configMapKeyRef:
+              name: eureka-config
+              key: EUREKA_SERVER_URL
+        - name: EUREKA_INSTANCE_HOSTNAME
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: SPRING_DATASOURCE_URL
+          value: "jdbc:postgresql://postgres:5432/postgres"
+        - name: SPRING_DATASOURCE_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: POSTGRES_USER
+        - name: SPRING_DATASOURCE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: POSTGRES_PASSWORD
+        - name: SPRING_RABBITMQ_HOST
+          value: "rabbitmq"
+        - name: SPRING_RABBITMQ_PORT
+          value: "5672"
+        - name: SPRING_RABBITMQ_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: rabbitmq-secret
+              key: RABBITMQ_USER
+        - name: SPRING_RABBITMQ_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: rabbitmq-secret
+              key: RABBITMQ_PASSWORD
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "250m"
+        livenessProbe:
+          tcpSocket:
+            port: 8080
+          initialDelaySeconds: 90
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          tcpSocket:
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ms-database
+  namespace: ecommerce
+spec:
+  selector:
+    app: ms-database
+  ports:
+  - port: 8080
+    targetPort: 8080
+  type: ClusterIP

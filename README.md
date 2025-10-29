@@ -7,6 +7,8 @@
 ![Spring Cloud](https://img.shields.io/badge/Spring%20Cloud-2025.0.0-green?logo=spring)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue?logo=postgresql)
 ![RabbitMQ](https://img.shields.io/badge/RabbitMQ-3.x-orange?logo=rabbitmq)
+![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker)
+![Kubernetes](https://img.shields.io/badge/Kubernetes-Ready-326CE5?logo=kubernetes)
 ![JWT](https://img.shields.io/badge/JWT-Auth-black?logo=jsonwebtokens)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
@@ -17,6 +19,7 @@
 [Tecnologias](#-stack-tecnológico) •
 [Instalação](#-instalação-e-configuração) •
 [Docker](#-docker-e-containerização) •
+[Kubernetes](#️-kubernetes-deployment) •
 [Endpoints](#-documentação-de-endpoints) •
 [Segurança](#-sistema-de-autenticação-e-autorização)
 
@@ -33,6 +36,7 @@
 - [Microserviços](#-microserviços)
 - [Instalação e Configuração](#-instalação-e-configuração)
 - [Docker e Containerização](#-docker-e-containerização)
+- [Kubernetes Deployment](#️-kubernetes-deployment)
 - [Documentação de Endpoints](#-documentação-de-endpoints)
 - [Sistema de Autenticação](#-sistema-de-autenticação-e-autorização)
 - [Fluxo de Dados](#-fluxo-de-dados)
@@ -1126,21 +1130,25 @@ Cliente acessa a plataforma de e-commerce
 - [x] HATEOAS links
 - [x] Documentação completa
 - [x] Swagger/OpenAPI documentation
+- [x] Docker Compose para ambiente completo
+- [x] Testes unitários e de integração (59 testes)
+- [x] **Kubernetes Deployment com K3d** ✅
+  - Manifests YAML completos (Namespace, ConfigMaps, Secrets)
+  - StatefulSets para PostgreSQL e RabbitMQ com PersistentVolumes
+  - Deployments para todos os microservices
+  - Health checks (TCP probes)
+  - Service Discovery via Eureka no cluster
+  - LoadBalancer para API Gateway
+  - Scripts PowerShell de automação (`start-ecommerce.ps1`, `stop-ecommerce.ps1`)
+  - Documentação completa de deploy e troubleshooting
 
 ### 🔄 Em Progresso
 
-- [x] Testes unitários e de integração (59 testes implementados)
-- [x] Docker Compose para ambiente completo
-- [ ] **CI/CD Pipeline (GitHub Actions)** ⚠️ **[PENDENTE]**
+- [ ] **CI/CD Pipeline (GitHub Actions)** ⚠️ **[PRÓXIMO]**
   - Integração Contínua (build, testes, code quality)
-  - Deploy Contínuo para ambientes de staging e produção
-  - Automação de releases
-- [ ] **Kubernetes Deployment** ⚠️ **[PENDENTE]**
-  - Manifests YAML para pods, services e deployments
-  - Configuração de auto-scaling horizontal
-  - Health checks e liveness/readiness probes
-  - ConfigMaps e Secrets para configurações
-  - Ingress controller para roteamento
+  - Deploy Contínuo para Kubernetes
+  - Automação de releases e tags
+  - Build e push automático de imagens Docker
 
 ### 📋 Próximas Funcionalidades
 
@@ -1185,6 +1193,296 @@ Cliente acessa a plataforma de e-commerce
   - Helm charts
   - Auto-scaling
   - Service mesh (Istio)
+
+---
+
+## ☸️ Kubernetes Deployment
+
+Este projeto está completamente containerizado e pronto para deploy em ambientes Kubernetes, incluindo **K3d**, **minikube**, **EKS**, **AKS** ou **GKE**.
+
+### 📊 Arquitetura Kubernetes
+
+```
+┌─────────────────────────────────────────────────────────┐
+│              KUBERNETES CLUSTER (K3d)                    │
+│                 Namespace: ecommerce                     │
+├─────────────────────────────────────────────────────────┤
+│                                                          │
+│  ┌────────────────────────────────────────────────┐    │
+│  │      API GATEWAY (LoadBalancer)                │    │
+│  │  Image: thallyscezar/ecommerce-api-gateway     │    │
+│  │  Container Port: 8082                          │    │
+│  │  Service: LoadBalancer → Port 8080             │    │
+│  │  Access: kubectl port-forward 8080:8080        │    │
+│  └────────────┬───────────────────────────────────┘    │
+│               │                                         │
+│               ↓ Roteia Requisições via Service Names   │
+│               │                                         │
+│  ┌────────────┴───────────────────────────────────┐   │
+│  │    EUREKA SERVER (Service Discovery)           │   │
+│  │    Image: thallyscezar/ecommerce-eureka-server │   │
+│  │    Container Port: 8081 → Service Port: 8761   │   │
+│  │    Environment: SERVER_PORT=8081               │   │
+│  └────────────────────────────────────────────────┘   │
+│               ↑ Microservices se registram aqui       │
+│               │                                        │
+│  ┌────────────┴───────────────────────────────────┐   │
+│  │         MICROSERVICES (Port 8080)              │   │
+│  ├────────────────────────────────────────────────┤   │
+│  │ • ms-database   (Database Management)          │   │
+│  │   Image: thallyscezar/ecommerce-ms-database    │   │
+│  │                                                 │   │
+│  │ • ms-usuarios   (Authentication & Users)       │   │
+│  │   Image: thallyscezar/ecommerce-ms-usuarios    │   │
+│  │                                                 │   │
+│  │ • ms-produtos   (Product Catalog)              │   │
+│  │   Image: thallyscezar/ecommerce-ms-produtos    │   │
+│  │                                                 │   │
+│  │ • ms-pedidos    (Order Management)             │   │
+│  │   Image: thallyscezar/ecommerce-ms-pedidos     │   │
+│  │                                                 │   │
+│  │ • ms-pagamentos (Payment Processing)           │   │
+│  │   Image: thallyscezar/ecommerce-ms-pagamentos  │   │
+│  └──────────┬────────────────────┬────────────────┘   │
+│             │                    │                     │
+│             ↓                    ↓                     │
+│  ┌──────────────────┐  ┌─────────────────────┐       │
+│  │   POSTGRESQL     │  │     RABBITMQ        │       │
+│  │  StatefulSet     │  │   StatefulSet       │       │
+│  │  Port: 5432      │  │   Ports: 5672/15672 │       │
+│  │  PVC: 5Gi        │  │   PVC: 2Gi          │       │
+│  │  Image: postgres │  │   Image: rabbitmq   │       │
+│  │  :15-alpine      │  │   :3-management     │       │
+│  └──────────────────┘  └─────────────────────┘       │
+│                                                        │
+└────────────────────────────────────────────────────────┘
+```
+
+### 🎯 Componentes Kubernetes
+
+#### **📦 Recursos Criados**
+
+| Tipo | Nome | Quantidade | Descrição |
+|------|------|------------|-----------|
+| **Namespace** | `ecommerce` | 1 | Isolamento lógico de recursos |
+| **ConfigMap** | `eureka-config`<br>`database-config`<br>`rabbitmq-config` | 3 | Configurações de aplicação |
+| **Secret** | `postgres-secret`<br>`rabbitmq-secret` | 2 | Credenciais sensíveis |
+| **StatefulSet** | `postgres`<br>`rabbitmq` | 2 | Infraestrutura com estado |
+| **Deployment** | `eureka-server`<br>`api-gateway`<br>`ms-*` (5 microservices) | 7 | Aplicações stateless |
+| **Service** | ClusterIP (8x)<br>LoadBalancer (1x) | 9 | Comunicação entre pods |
+| **PersistentVolumeClaim** | `postgres-pvc`<br>`rabbitmq-pvc` | 2 | Armazenamento persistente |
+
+### 🗂️ Estrutura de Manifests
+
+```
+k8s/
+├── namespace.yaml                    # Namespace ecommerce
+├── configmaps/
+│   └── app-config.yaml              # Configurações (Eureka, DB, RabbitMQ)
+├── secrets/
+│   └── credentials.yaml             # Senhas PostgreSQL e RabbitMQ
+├── infrastructure/
+│   ├── postgres/
+│   │   └── postgres.yaml            # PostgreSQL StatefulSet + PVC + Service
+│   └── rabbitmq/
+│       └── rabbitmq.yaml            # RabbitMQ StatefulSet + PVC + Service
+├── discovery/
+│   └── eureka-server.yaml           # Eureka Server Deployment + Service
+├── microservices/
+│   ├── ms-database/
+│   │   └── deployment.yaml          # ms-database Deployment + Service
+│   ├── ms-usuarios/
+│   │   └── deployment.yaml          # ms-usuarios Deployment + Service
+│   ├── ms-produtos/
+│   │   └── deployment.yaml          # ms-produtos Deployment + Service
+│   ├── ms-pedidos/
+│   │   └── deployment.yaml          # ms-pedidos Deployment + Service
+│   └── ms-pagamentos/
+│       └── deployment.yaml          # ms-pagamentos Deployment + Service
+└── gateway/
+    └── api-gateway.yaml             # API Gateway Deployment + LoadBalancer
+```
+
+### ⚙️ Configurações Importantes
+
+#### **🔌 Portas Configuradas**
+
+| Serviço | Container Port | Service Port | Tipo | Acesso |
+|---------|---------------|--------------|------|--------|
+| **Eureka Server** | 8081 | 8761 | ClusterIP | Interno |
+| **API Gateway** | 8082 | 8080 | LoadBalancer | Port-forward |
+| **ms-database** | 8080 | 8080 | ClusterIP | Interno |
+| **ms-usuarios** | 8080 | 8080 | ClusterIP | Interno |
+| **ms-produtos** | 8080 | 8080 | ClusterIP | Interno |
+| **ms-pedidos** | 8080 | 8080 | ClusterIP | Interno |
+| **ms-pagamentos** | 8080 | 8080 | ClusterIP | Interno |
+| **PostgreSQL** | 5432 | 5432 | ClusterIP (Headless) | Interno |
+| **RabbitMQ** | 5672, 15672 | 5672, 15672 | ClusterIP | Interno |
+
+> 💡 **Nota**: Todos os microservices usam porta 8080, mas não há conflito devido ao isolamento por **pod IP** no Kubernetes.
+
+### 🚀 Deploy no Kubernetes (K3d)
+
+#### **Pré-requisitos**
+
+- **Docker** instalado
+- **kubectl** instalado
+- **K3d** instalado
+
+```powershell
+# Instalar K3d (Windows via Chocolatey)
+choco install k3d
+
+# Ou via Scoop
+scoop install k3d
+```
+
+#### **1️⃣ Criar Cluster K3d**
+
+```powershell
+# Criar cluster local
+k3d cluster create projectecommercemicro
+
+# Verificar cluster
+k3d cluster list
+kubectl cluster-info
+```
+
+#### **2️⃣ Deploy Manual (Passo a Passo)**
+
+```powershell
+# 1. Criar namespace
+kubectl apply -f k8s/namespace.yaml
+
+# 2. Aplicar ConfigMaps e Secrets
+kubectl apply -f k8s/configmaps/
+kubectl apply -f k8s/secrets/
+
+# 3. Deploy da infraestrutura (PostgreSQL e RabbitMQ)
+kubectl apply -f k8s/infrastructure/postgres/
+kubectl apply -f k8s/infrastructure/rabbitmq/
+
+# Aguardar infraestrutura ficar pronta (pode levar 2-3 minutos)
+kubectl wait --for=condition=ready pod -l app=postgres -n ecommerce --timeout=180s
+kubectl wait --for=condition=ready pod -l app=rabbitmq -n ecommerce --timeout=180s
+
+# 4. Deploy do Eureka Server
+kubectl apply -f k8s/discovery/
+
+# Aguardar Eureka ficar pronto
+kubectl wait --for=condition=ready pod -l app=eureka-server -n ecommerce --timeout=120s
+
+# 5. Deploy dos Microservices
+kubectl apply -f k8s/microservices/ms-database/
+kubectl apply -f k8s/microservices/ms-usuarios/
+kubectl apply -f k8s/microservices/ms-produtos/
+kubectl apply -f k8s/microservices/ms-pedidos/
+kubectl apply -f k8s/microservices/ms-pagamentos/
+
+# Aguardar microservices ficarem prontos (5-10 minutos)
+Start-Sleep -Seconds 60
+
+# 6. Deploy do API Gateway
+kubectl apply -f k8s/gateway/
+
+# Aguardar Gateway ficar pronto
+kubectl wait --for=condition=ready pod -l app=api-gateway -n ecommerce --timeout=120s
+
+# 7. Verificar status final
+kubectl get pods -n ecommerce
+kubectl get svc -n ecommerce
+```
+
+---
+
+### 🔍 Verificação e Monitoramento
+
+#### **Ver Status dos Pods**
+
+```powershell
+# Ver todos os pods
+kubectl get pods -n ecommerce
+
+# Ver pods com mais detalhes
+kubectl get pods -n ecommerce -o wide
+
+# Assistir mudanças em tempo real
+kubectl get pods -n ecommerce -w
+```
+
+**Saída Esperada:**
+```
+NAME                             READY   STATUS    RESTARTS   AGE
+api-gateway-5b86756856-75qdt     1/1     Running   0          10m
+eureka-server-69f78dcb96-zp6gp   1/1     Running   0          12m
+ms-database-5d876fd68b-k76p9     1/1     Running   0          10m
+ms-pagamentos-7d9f8c5b4d-xyz12   1/1     Running   0          10m
+ms-pedidos-8c6d9f7e3a-abc34      1/1     Running   0          10m
+ms-produtos-9e7f8d6c2b-def56     1/1     Running   0          10m
+ms-usuarios-fdb8dc58b-qwglh      1/1     Running   0          10m
+postgres-0                       1/1     Running   0          15m
+rabbitmq-0                       1/1     Running   0          15m
+```
+
+#### **Ver Logs**
+
+```powershell
+# Logs de um serviço específico
+kubectl logs -n ecommerce -l app=ms-usuarios --tail=50
+
+# Seguir logs em tempo real
+kubectl logs -n ecommerce -l app=ms-usuarios -f
+
+# Logs do API Gateway
+kubectl logs -n ecommerce -l app=api-gateway --tail=100
+
+# Logs do Eureka
+kubectl logs -n ecommerce -l app=eureka-server --tail=50
+```
+
+#### **Descrever Recursos**
+
+```powershell
+# Detalhes de um pod
+kubectl describe pod <nome-do-pod> -n ecommerce
+
+# Detalhes de um deployment
+kubectl describe deployment ms-usuarios -n ecommerce
+
+# Ver eventos do namespace
+kubectl get events -n ecommerce --sort-by='.lastTimestamp'
+```
+
+#### **Acessar Dashboard do Eureka**
+
+```powershell
+# Port-forward do Eureka
+kubectl port-forward -n ecommerce svc/eureka-server 8761:8761
+
+# Abrir no navegador
+# http://localhost:8761
+```
+
+**Você verá todos os microservices registrados:**
+- GATEWAY
+- MS-DATABASE
+- MS-USUARIOS
+- MS-PRODUTOS
+- MS-PEDIDOS
+- MS-PAGAMENTOS
+
+---
+
+### 🌐 Acessando a Aplicação
+
+#### **Via Port-Forward (Recomendado para K3d)**
+
+```powershell
+# Port-forward do API Gateway
+kubectl port-forward -n ecommerce svc/api-gateway 8080:8080
+
+# Manter o terminal aberto!
+```
 
 ---
 
