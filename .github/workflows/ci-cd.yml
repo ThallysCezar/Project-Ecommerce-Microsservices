@@ -1,0 +1,323 @@
+# ==============================================================================
+# CI/CD Pipeline - E-commerce Microservices
+# ==============================================================================
+# Este workflow automatiza:
+# 1. Build e testes de todos os microservices
+# 2. Build e push de imagens Docker para Docker Hub
+# 3. (Opcional) Deploy no Kubernetes
+#
+# Triggers:
+# - Push na branch main
+# - Pull requests para main
+# ==============================================================================
+
+name: CI/CD Pipeline
+
+# ==============================================================================
+# TRIGGER: Quando o pipeline deve executar?
+# ==============================================================================
+on:
+  # Executa quando há push na branch main
+  push:
+    branches: [ main ]
+  
+  # Executa quando há pull request para main
+  pull_request:
+    branches: [ main ]
+  
+  # Permite executar manualmente via interface do GitHub
+  workflow_dispatch:
+
+# ==============================================================================
+# VARIÁVEIS GLOBAIS
+# ==============================================================================
+env:
+  # Nome de usuário do Docker Hub (será usado para nomear as imagens)
+  DOCKER_USERNAME: thallyscezar
+  
+  # Versão do Java para build (deve ser a mesma do projeto)
+  JAVA_VERSION: '17'
+  
+  # Versão do Maven
+  MAVEN_VERSION: '3.9.x'
+
+# ==============================================================================
+# JOBS: Conjunto de tarefas que o pipeline executa
+# ==============================================================================
+jobs:
+  
+  # ==========================================================================
+  # JOB 1: BUILD & TEST
+  # ==========================================================================
+  # Objetivo: Compilar código e executar todos os testes
+  # Por quê? Garantir que o código está funcionando antes de fazer deploy
+  # ==========================================================================
+  build-and-test:
+    name: 🔨 Build & Test Microservices
+    
+    # Ambiente onde o job vai rodar (máquina virtual Ubuntu da GitHub)
+    runs-on: ubuntu-latest
+    
+    # Estratégia de matriz: Roda o mesmo job para múltiplos microservices
+    # Por quê? Não precisamos repetir código para cada microservice
+    strategy:
+      # fail-fast: false = Se um microservice falhar, continua testando os outros
+      fail-fast: false
+      
+      # Matrix: Lista de microservices para testar
+      matrix:
+        service:
+          - server              # Eureka Server
+          - api-gateway         # API Gateway
+          - ms-database         # Database Microservice
+          - ms-usuarios         # Users Microservice
+          - ms-produtos         # Products Microservice
+          - ms-pedidos          # Orders Microservice
+          - ms-pagamentos       # Payments Microservice
+    
+    steps:
+      # ----------------------------------------------------------------------
+      # STEP 1: Checkout do código
+      # ----------------------------------------------------------------------
+      # O quê faz? Baixa o código do repositório para a máquina virtual
+      # Por quê? O GitHub Actions precisa do código para fazer build
+      # ----------------------------------------------------------------------
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+      
+      # ----------------------------------------------------------------------
+      # STEP 2: Configurar Java
+      # ----------------------------------------------------------------------
+      # O quê faz? Instala o JDK 17 na máquina virtual
+      # Por quê? Precisamos do Java para compilar os microservices Spring Boot
+      # distribution: temurin = Versão open-source do JDK (Eclipse Temurin)
+      # ----------------------------------------------------------------------
+      - name: ☕ Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          
+          # Cache do Maven: Armazena dependências baixadas
+          # Por quê? Evita baixar as mesmas dependências toda vez (mais rápido)
+          cache: maven
+      
+      # ----------------------------------------------------------------------
+      # STEP 3: Build com Maven
+      # ----------------------------------------------------------------------
+      # O quê faz? Compila o código do microservice
+      # Por quê? Verificar se o código compila sem erros
+      # Flags:
+      #   -B = Batch mode (não mostra progresso, mais limpo nos logs)
+      #   -f = File (caminho para o pom.xml do microservice)
+      #   clean = Limpa builds anteriores
+      #   package = Compila e empacota o .jar
+      #   -DskipTests = Pula testes nesta etapa (vamos rodar separado)
+      # ----------------------------------------------------------------------
+      - name: 🔨 Build ${{ matrix.service }}
+        run: |
+          echo "Building ${{ matrix.service }}..."
+          mvn -B -f ${{ matrix.service }}/pom.xml clean package -DskipTests
+      
+      # ----------------------------------------------------------------------
+      # STEP 4: Rodar Testes
+      # ----------------------------------------------------------------------
+      # O quê faz? Executa todos os testes unitários e de integração
+      # Por quê? Garantir que o código funciona corretamente
+      # test = Roda os testes do Maven
+      # ----------------------------------------------------------------------
+      - name: 🧪 Run tests for ${{ matrix.service }}
+        run: |
+          echo "Running tests for ${{ matrix.service }}..."
+          mvn -B -f ${{ matrix.service }}/pom.xml test
+      
+      # ----------------------------------------------------------------------
+      # STEP 5: Fazer upload do artefato (JAR)
+      # ----------------------------------------------------------------------
+      # O quê faz? Salva o arquivo .jar gerado pelo build
+      # Por quê? Pode ser usado depois para deploy ou debug
+      # Opcional: Você pode baixar este arquivo na aba "Actions" do GitHub
+      # ----------------------------------------------------------------------
+      - name: 📦 Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.service }}-jar
+          path: ${{ matrix.service }}/target/*.jar
+          retention-days: 7  # Mantém o arquivo por 7 dias
+  
+  # ==========================================================================
+  # JOB 2: BUILD & PUSH DOCKER IMAGES
+  # ==========================================================================
+  # Objetivo: Criar imagens Docker e enviar para Docker Hub
+  # Por quê? Precisamos das imagens para fazer deploy no Kubernetes
+  # needs: [build-and-test] = Só executa se o Job 1 passar com sucesso
+  # ==========================================================================
+  docker-build-push:
+    name: 🐳 Build & Push Docker Images
+    runs-on: ubuntu-latest
+    
+    # Só executa se os testes passarem
+    needs: [build-and-test]
+    
+    # Só executa para push na main (não para pull requests)
+    # Por quê? Não queremos fazer deploy de pull requests não aprovados
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    # Matrix: Lista de microservices para criar imagens Docker
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          - name: server
+            context: ./server
+          - name: api-gateway
+            context: ./api-gateway
+          - name: ms-database
+            context: ./ms-database
+          - name: ms-usuarios
+            context: ./ms-usuarios
+          - name: ms-produtos
+            context: ./ms-produtos
+          - name: ms-pedidos
+            context: ./ms-pedidos
+          - name: ms-pagamentos
+            context: ./ms-pagamentos
+    
+    steps:
+      # ----------------------------------------------------------------------
+      # STEP 1: Checkout do código
+      # ----------------------------------------------------------------------
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+      
+      # ----------------------------------------------------------------------
+      # STEP 2: Configurar Docker Buildx
+      # ----------------------------------------------------------------------
+      # O quê faz? Configura o Docker Buildx (versão avançada do docker build)
+      # Por quê? Permite builds mais rápidos e multi-plataforma (ARM, x86)
+      # ----------------------------------------------------------------------
+      - name: 🔧 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      # ----------------------------------------------------------------------
+      # STEP 3: Login no Docker Hub
+      # ----------------------------------------------------------------------
+      # O quê faz? Faz login no Docker Hub usando credenciais seguras
+      # Por quê? Precisamos estar logados para fazer push das imagens
+      # 
+      # IMPORTANTE: Você precisa configurar secrets no GitHub:
+      # 1. Vá em: Settings → Secrets and variables → Actions
+      # 2. Adicione dois secrets:
+      #    - DOCKER_USERNAME: seu username do Docker Hub
+      #    - DOCKER_PASSWORD: seu password ou token do Docker Hub
+      # ----------------------------------------------------------------------
+      - name: 🔐 Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      
+      # ----------------------------------------------------------------------
+      # STEP 4: Extrair metadados
+      # ----------------------------------------------------------------------
+      # O quê faz? Gera tags e labels para a imagem Docker
+      # Por quê? Padroniza as tags (latest, sha-abc123, etc)
+      # 
+      # Tags geradas:
+      # - latest: Última versão
+      # - sha-abc123: Hash do commit (para rastreabilidade)
+      # ----------------------------------------------------------------------
+      - name: 🏷️ Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.DOCKER_USERNAME }}/ecommerce-${{ matrix.service.name }}
+          tags: |
+            type=raw,value=latest
+            type=sha,prefix=sha-
+      
+      # ----------------------------------------------------------------------
+      # STEP 5: Build e Push da imagem Docker
+      # ----------------------------------------------------------------------
+      # O quê faz? Constrói a imagem Docker e envia para Docker Hub
+      # Por quê? Esta imagem será usada no Kubernetes
+      # 
+      # context: Diretório onde está o Dockerfile
+      # push: true = Envia a imagem para Docker Hub após build
+      # cache: Usa cache para acelerar builds futuros
+      # ----------------------------------------------------------------------
+      - name: 🐳 Build and push ${{ matrix.service.name }}
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ matrix.service.context }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          
+          # Cache layers para acelerar próximos builds
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+  
+  # ==========================================================================
+  # JOB 3: DEPLOY TO KUBERNETES (OPCIONAL)
+  # ==========================================================================
+  # Objetivo: Fazer deploy automático no Kubernetes
+  # Por quê? Automatizar o deploy após passar nos testes
+  # 
+  # NOTA: Este job está comentado porque deploy local (K3d) não é comum em CI/CD
+  # Para produção, você configuraria deploy em EKS, AKS ou GKE
+  # ==========================================================================
+  # deploy-kubernetes:
+  #   name: ☸️ Deploy to Kubernetes
+  #   runs-on: ubuntu-latest
+  #   needs: [docker-build-push]
+  #   
+  #   steps:
+  #     - name: 📥 Checkout code
+  #       uses: actions/checkout@v4
+  #     
+  #     # Configurar kubectl com suas credenciais de cluster
+  #     # Para cloud providers (EKS, AKS, GKE), você usaria actions específicos
+  #     - name: ⚙️ Configure kubectl
+  #       run: |
+  #         # Configurar acesso ao cluster Kubernetes
+  #         # Este passo varia dependendo de onde seu cluster está
+  #         echo "Configure kubectl here"
+  #     
+  #     # Aplicar manifests do Kubernetes
+  #     - name: 🚀 Deploy to Kubernetes
+  #       run: |
+  #         kubectl apply -f k8s/namespace.yaml
+  #         kubectl apply -f k8s/configmaps/
+  #         kubectl apply -f k8s/secrets/
+  #         kubectl apply -f k8s/infrastructure/
+  #         kubectl apply -f k8s/discovery/
+  #         kubectl apply -f k8s/microservices/
+  #         kubectl apply -f k8s/gateway/
+  #     
+  #     # Verificar se deploy foi bem-sucedido
+  #     - name: ✅ Verify deployment
+  #       run: |
+  #         kubectl wait --for=condition=ready pod --all -n ecommerce --timeout=300s
+  #         kubectl get pods -n ecommerce
+
+  # ==========================================================================
+  # JOB 4: NOTIFICAÇÃO DE SUCESSO
+  # ==========================================================================
+  # Objetivo: Notificar que o pipeline completou com sucesso
+  # Por quê? Feedback visual de que tudo funcionou
+  # ==========================================================================
+  notify-success:
+    name: 📢 Notify Success
+    runs-on: ubuntu-latest
+    needs: [docker-build-push]
+    
+    # Só executa se todos os jobs anteriores passarem
+    if: success()
+    
+    steps:
+      - name: 🎉 Pipeline completed successfully
+        run: |
+          echo "✅ All microservices built, tested, and pushed to Docker Hub!"
+          echo "🐳 Docker images available at: https://hub.docker.com/u/${{ env.DOCKER_USERNAME }}"
+          echo "📦 Tagged as: latest and sha-${{ github.sha }}"
