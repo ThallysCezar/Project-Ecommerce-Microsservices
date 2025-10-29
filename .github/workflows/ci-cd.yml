@@ -242,18 +242,25 @@ jobs:
         service:
           - name: server
             context: ./server
+            dockerfile: ./server/Dockerfile
           - name: api-gateway
             context: ./api-gateway
+            dockerfile: ./api-gateway/Dockerfile
           - name: ms-database
-            context: ./ms-database
+            context: .
+            dockerfile: ./ms-database/Dockerfile
           - name: ms-usuarios
-            context: ./ms-usuarios
+            context: .
+            dockerfile: ./ms-usuarios/Dockerfile
           - name: ms-produtos
-            context: ./ms-produtos
+            context: .
+            dockerfile: ./ms-produtos/Dockerfile
           - name: ms-pedidos
-            context: ./ms-pedidos
+            context: .
+            dockerfile: ./ms-pedidos/Dockerfile
           - name: ms-pagamentos
-            context: ./ms-pagamentos
+            context: .
+            dockerfile: ./ms-pagamentos/Dockerfile
     
     steps:
       # ----------------------------------------------------------------------
@@ -314,7 +321,8 @@ jobs:
       # O quê faz? Constrói a imagem Docker e envia para Docker Hub
       # Por quê? Esta imagem será usada no Kubernetes
       # 
-      # context: Diretório onde está o Dockerfile
+      # context: Diretório base para o build
+      # file: Localização do Dockerfile
       # push: true = Envia a imagem para Docker Hub após build
       # cache: Usa cache para acelerar builds futuros
       # ----------------------------------------------------------------------
@@ -322,6 +330,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ${{ matrix.service.context }}
+          file: ${{ matrix.service.dockerfile }}
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

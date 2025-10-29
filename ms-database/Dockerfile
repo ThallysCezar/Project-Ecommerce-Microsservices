@@ -2,22 +2,18 @@ FROM eclipse-temurin:17-jdk-alpine AS build
 
 WORKDIR /workspace
 
-# Copy maven wrapper
+# Copy maven wrapper from ms-database
 COPY ms-database/mvnw .
 COPY ms-database/.mvn .mvn
 
-# Copy custom Maven settings (mirror brasileiro)
-COPY maven-settings.xml /root/.m2/settings.xml
-
-# Copy common-dtos (dependency)
+# Copy common-dtos (dependency shared module)
 COPY common-dtos common-dtos/
 
 # Install common-dtos in local maven repo
 WORKDIR /workspace/common-dtos
 RUN chmod +x ../mvnw && \
-    ../mvnw clean install -DskipTests || \
-    ../mvnw clean install -DskipTests || \
-    ../mvnw clean install -DskipTests
+    ../mvnw clean install -DskipTests -B || \
+    ../mvnw clean install -DskipTests -B
 
 # Copy ms-database pom first (better layer caching)
 WORKDIR /workspace
