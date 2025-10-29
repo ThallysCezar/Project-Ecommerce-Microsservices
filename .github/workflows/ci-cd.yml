@@ -47,16 +47,75 @@ env:
 jobs:
   
   # ==========================================================================
+  # JOB 0: INSTALL COMMON-DTOS
+  # ==========================================================================
+  # Objetivo: Instalar o módulo compartilhado common-dtos no repositório Maven local
+  # Por quê? Outros microservices dependem dele (ms-usuarios, ms-produtos, etc)
+  # Este job DEVE rodar antes de todos os outros
+  # ==========================================================================
+  install-common-dtos:
+    name: 📦 Install Common DTOs
+    runs-on: ubuntu-latest
+    
+    steps:
+      # ----------------------------------------------------------------------
+      # STEP 1: Checkout do código
+      # ----------------------------------------------------------------------
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+      
+      # ----------------------------------------------------------------------
+      # STEP 2: Configurar Java
+      # ----------------------------------------------------------------------
+      - name: ☕ Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: maven
+      
+      # ----------------------------------------------------------------------
+      # STEP 3: Instalar common-dtos no repositório local
+      # ----------------------------------------------------------------------
+      # O quê faz? Compila e instala common-dtos no repositório Maven local
+      # Por quê? Outros microservices precisam dessa dependência
+      # mvn install = Compila + instala no ~/.m2/repository
+      # ----------------------------------------------------------------------
+      - name: 📦 Install common-dtos
+        run: |
+          echo "Installing common-dtos to local Maven repository..."
+          mvn -B -f common-dtos/pom.xml clean install -DskipTests
+          echo "✅ common-dtos installed successfully!"
+      
+      # ----------------------------------------------------------------------
+      # STEP 4: Fazer upload do common-dtos instalado
+      # ----------------------------------------------------------------------
+      # O quê faz? Salva o repositório Maven local (~/.m2/repository)
+      # Por quê? O próximo job vai precisar dele
+      # Cache entre jobs não funciona, então fazemos upload/download manual
+      # ----------------------------------------------------------------------
+      - name: 📤 Upload Maven repository
+        uses: actions/upload-artifact@v4
+        with:
+          name: maven-repository
+          path: ~/.m2/repository
+          retention-days: 1  # Só precisa durante a execução do pipeline
+  
+  # ==========================================================================
   # JOB 1: BUILD & TEST
   # ==========================================================================
   # Objetivo: Compilar código e executar todos os testes
   # Por quê? Garantir que o código está funcionando antes de fazer deploy
+  # needs: [install-common-dtos] = Só executa depois do Job 0
   # ==========================================================================
   build-and-test:
     name: 🔨 Build & Test Microservices
     
     # Ambiente onde o job vai rodar (máquina virtual Ubuntu da GitHub)
     runs-on: ubuntu-latest
+    
+    # Depende do install-common-dtos: Só executa após instalação do common-dtos
+    needs: [install-common-dtos]
     
     # Estratégia de matriz: Roda o mesmo job para múltiplos microservices
     # Por quê? Não precisamos repetir código para cada microservice
@@ -86,7 +145,19 @@ jobs:
         uses: actions/checkout@v4
       
       # ----------------------------------------------------------------------
-      # STEP 2: Configurar Java
+      # STEP 2: Baixar repositório Maven com common-dtos
+      # ----------------------------------------------------------------------
+      # O quê faz? Baixa o repositório Maven local criado pelo Job 0
+      # Por quê? Precisamos do common-dtos instalado para buildar os microservices
+      # ----------------------------------------------------------------------
+      - name: 📥 Download Maven repository
+        uses: actions/download-artifact@v4
+        with:
+          name: maven-repository
+          path: ~/.m2/repository
+      
+      # ----------------------------------------------------------------------
+      # STEP 3: Configurar Java
       # ----------------------------------------------------------------------
       # O quê faz? Instala o JDK 17 na máquina virtual
       # Por quê? Precisamos do Java para compilar os microservices Spring Boot
@@ -103,10 +174,11 @@ jobs:
           cache: maven
       
       # ----------------------------------------------------------------------
-      # STEP 3: Build com Maven
+      # STEP 4: Build com Maven
       # ----------------------------------------------------------------------
       # O quê faz? Compila o código do microservice
       # Por quê? Verificar se o código compila sem erros
+      # Agora funciona: common-dtos já está instalado no repositório local!
       # Flags:
       #   -B = Batch mode (não mostra progresso, mais limpo nos logs)
       #   -f = File (caminho para o pom.xml do microservice)
@@ -120,7 +192,7 @@ jobs:
           mvn -B -f ${{ matrix.service }}/pom.xml clean package -DskipTests
       
       # ----------------------------------------------------------------------
-      # STEP 4: Rodar Testes
+      # STEP 5: Rodar Testes
       # ----------------------------------------------------------------------
       # O quê faz? Executa todos os testes unitários e de integração
       # Por quê? Garantir que o código funciona corretamente
@@ -132,7 +204,7 @@ jobs:
           mvn -B -f ${{ matrix.service }}/pom.xml test
       
       # ----------------------------------------------------------------------
-      # STEP 5: Fazer upload do artefato (JAR)
+      # STEP 6: Fazer upload do artefato (JAR)
       # ----------------------------------------------------------------------
       # O quê faz? Salva o arquivo .jar gerado pelo build
       # Por quê? Pode ser usado depois para deploy ou debug
