@@ -8,7 +8,11 @@
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue?logo=postgresql)
 ![RabbitMQ](https://img.shields.io/badge/RabbitMQ-3.x-orange?logo=rabbitmq)
 ![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker)
-![Kubernetes](https://img.shields.io/badge/Kubernetes-Ready-326CE5?logo=kubernetes)
+![Kubernetes](https://img.shields.io/badge/Kubernetes-K3d-326CE5?logo=kubernetes)
+![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-CI%2FCD-2088FF?logo=githubactions)
+![JUnit](https://img.shields.io/badge/JUnit-5-25A162?logo=junit5)
+![Mockito](https://img.shields.io/badge/Mockito-Testing-green)
+![Trello](https://img.shields.io/badge/Trello-Scrum-0052CC?logo=trello)
 ![JWT](https://img.shields.io/badge/JWT-Auth-black?logo=jsonwebtokens)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
@@ -17,11 +21,11 @@
 [Características](#-características-principais) •
 [Arquitetura](#-arquitetura-do-sistema) •
 [Tecnologias](#-stack-tecnológico) •
-[Instalação](#-instalação-e-configuração) •
+[Testes](#-testes-automatizados) •
 [Docker](#-docker-e-containerização) •
 [Kubernetes](#️-kubernetes-deployment) •
-[Endpoints](#-documentação-de-endpoints) •
-[Segurança](#-sistema-de-autenticação-e-autorização)
+[CI/CD](#-cicd-pipeline) •
+[Endpoints](#-documentação-de-endpoints)
 
 </div>
 
@@ -33,6 +37,8 @@
 - [Características Principais](#-características-principais)
 - [Arquitetura do Sistema](#-arquitetura-do-sistema)
 - [Stack Tecnológico](#-stack-tecnológico)
+- [Testes Automatizados](#-testes-automatizados)
+- [Gestão de Projeto](#-gestão-de-projeto)
 - [Microserviços](#-microserviços)
 - [Instalação e Configuração](#-instalação-e-configuração)
 - [Docker e Containerização](#-docker-e-containerização)
@@ -40,7 +46,7 @@
 - [Documentação de Endpoints](#-documentação-de-endpoints)
 - [Sistema de Autenticação](#-sistema-de-autenticação-e-autorização)
 - [Fluxo de Dados](#-fluxo-de-dados)
-- [Testes](#-testes)
+- [CI/CD Pipeline](#-cicd-pipeline)
 - [Roadmap](#-roadmap)
 - [Contribuição](#-contribuição)
 - [Licença](#-licença)
@@ -63,6 +69,10 @@ Este projeto implementa uma **plataforma completa de e-commerce** utilizando **a
 - ✅ **Database Isolation** com PostgreSQL dedicado
 - ✅ **Circuit Breaker** e resiliência com Feign Client
 - ✅ **Logging Centralizado** e rastreamento de requisições
+- ✅ **Containerização Completa** com Docker e orquestração Kubernetes (K3d)
+- ✅ **CI/CD Automatizado** com GitHub Actions
+- ✅ **Testes Automatizados** com JUnit 5 e Mockito
+- ✅ **Gestão Ágil** com Trello (Scrum/Kanban)
 
 ---
 
@@ -92,6 +102,24 @@ Este projeto implementa uma **plataforma completa de e-commerce** utilizando **a
 - Rastreamento de requisições entre serviços
 - Health checks em todos os serviços
 - Monitoramento via Spring Actuator
+
+### 🐳 DevOps & Cloud Native
+- **Docker**: Containerização de todos os microserviços
+- **Kubernetes (K3d)**: Orquestração e deployment em cluster local
+- **GitHub Actions**: Pipeline de CI/CD automatizado
+- **Docker Hub**: Registry centralizado de imagens
+
+### 🧪 Qualidade de Código
+- **JUnit 5**: Framework de testes unitários
+- **Mockito**: Mocking de dependências
+- **Spring Boot Test**: Testes de integração
+- **H2 Database**: Banco em memória para testes
+- **Test Profiles**: Isolamento de configurações de teste
+
+### 📋 Gestão de Projeto
+- **Trello**: Gerenciamento Scrum/Kanban
+- **Conventional Commits**: Padronização de commits
+- **Documentação**: README completo e guias técnicos
 
 ---
 
@@ -162,7 +190,6 @@ Este projeto implementa uma **plataforma completa de e-commerce** utilizando **a
 | **Spring Cloud Gateway** | 4.3.1 | API Gateway reativo |
 | **Netflix Eureka** | 4.3.0 | Service Discovery & Registration |
 | **OpenFeign** | 4.x | Cliente HTTP declarativo |
-| **Resilience4j** | - | Circuit Breaker & Fault Tolerance |
 
 ### Segurança
 | Tecnologia | Versão | Uso |
@@ -175,8 +202,26 @@ Este projeto implementa uma **plataforma completa de e-commerce** utilizando **a
 | Tecnologia | Versão | Uso |
 |-----------|--------|-----|
 | **PostgreSQL** | 15+ | Banco de dados relacional |
+| **H2 Database** | - | Banco em memória para testes |
 | **RabbitMQ** | 3.x | Message Broker para comunicação assíncrona |
 | **Hibernate** | 6.x | ORM (Object-Relational Mapping) |
+
+### DevOps & Cloud
+| Tecnologia | Versão | Uso |
+|-----------|--------|-----|
+| **Docker** | 24+ | Containerização de aplicações |
+| **Docker Compose** | 2.x | Orquestração local de containers |
+| **Kubernetes** | K3d | Orquestração e deployment em cluster |
+| **GitHub Actions** | - | CI/CD Pipeline automatizado |
+| **Docker Hub** | - | Registry de imagens Docker |
+
+### Testes
+| Tecnologia | Versão | Uso |
+|-----------|--------|-----|
+| **JUnit** | 5.x | Framework de testes unitários |
+| **Mockito** | 5.x | Mocking de dependências e objetos |
+| **Spring Boot Test** | 3.x | Testes de integração |
+| **AssertJ** | - | Assertions fluentes |
 
 ### Ferramentas & Bibliotecas
 | Tecnologia | Uso |
@@ -500,8 +545,8 @@ Você pode personalizar as configurações criando um arquivo `.env` ou editando
 ```properties
 # ms-database/src/main/resources/application.properties
 spring.datasource.url=jdbc:postgresql://localhost:5432/postgres
-spring.datasource.username=postgres
-spring.datasource.password=123456
+spring.datasource.username=USERNAME
+spring.datasource.password=PASSWORD
 
 spring.rabbitmq.host=localhost
 spring.rabbitmq.port=5672
@@ -559,31 +604,9 @@ cd ../ms-pagamentos
 java -jar target/ms-pagamentos-0.0.1-SNAPSHOT.jar
 ```
 
-### 7️⃣ Verificar Serviços
-
-Aguarde todos os serviços se registrarem no Eureka (~1-2 minutos):
-
-**Dashboard de Monitoramento**:
-- **Eureka Dashboard**: http://localhost:8081 (veja todos os serviços registrados)
-- **RabbitMQ Management**: http://localhost:15672 (filas e mensagens)
-
-**Health Checks via API Gateway** (porta única de acesso):
-- **API Gateway**: http://localhost:8082/actuator/health
-- **ms-usuarios**: http://localhost:8082/ms-usuarios/actuator/health
-- **ms-produtos**: http://localhost:8082/ms-produtos/actuator/health
-- **ms-pedidos**: http://localhost:8082/ms-pedidos/actuator/health
-- **ms-pagamentos**: http://localhost:8082/ms-pagamentos/actuator/health
-
-**Health Check Direto** (apenas para debug - não use em produção):
-- **ms-database**: http://localhost:8080/actuator/health
-
-> **💡 Nota Importante**: Em produção, **todos os acessos devem passar pelo API Gateway (8082)**. As portas individuais dos microserviços (8080, 8083-8086) devem estar bloqueadas no firewall e acessíveis apenas internamente via Eureka.
-
-✅ **Sistema pronto para uso!**
-
 ---
 
-## � Docker e Containerização
+## Docker e Containerização
 
 ### 📦 Executar com Docker Compose (Recomendado)
 
@@ -648,17 +671,7 @@ Após ~2 minutos, todos os serviços estarão disponíveis:
 - **RabbitMQ Management**: http://localhost:15672 (guest/guest)
 - **PostgreSQL**: localhost:5432
 
-### 📖 Documentação Docker Completa
-
-Para mais detalhes sobre:
-- Construção de imagens individuais
-- Variáveis de ambiente
-- Troubleshooting
-- Configurações avançadas
-  
----
-
-## �📚 Documentação de Endpoints
+## 📚 Documentação de Endpoints
 
 ### 🔓 Autenticação (Endpoints Públicos)
 
@@ -1107,12 +1120,153 @@ graph TD
     L --> M[🏁 Fim do Fluxo]
 ```
 
-### 🔢 Passo a Passo Detalhado
+## � CI/CD Pipeline
 
-#### **1️⃣ Início do Fluxo**
+### 🎯 Visão Geral
+
+Este projeto implementa um **pipeline completo de CI/CD** utilizando **GitHub Actions**.
+
+### 📊 Arquitetura do Pipeline
+
 ```
-Cliente acessa a plataforma de e-commerce
+┌──────────────────────────────────────────────────────────┐
+│                     TRIGGER                              │
+│  Push to main | Pull Request | Manual Dispatch          │
+└────────────────────┬─────────────────────────────────────┘
+                     │
+                     ↓
+┌──────────────────────────────────────────────────────────┐
+│  Job 0: install-common-dtos (~2 min)                     │
+│  ├─ Checkout código                                      │
+│  ├─ Setup Java 17                                        │
+│  ├─ Cache Maven dependencies                             │
+│  ├─ Install common-dtos                                  │
+│  └─ Upload Maven repository artifact                     │
+└────────────────────┬─────────────────────────────────────┘
+                     │
+                     ↓
+┌──────────────────────────────────────────────────────────┐
+│  Job 1: build-and-test (~5 min - paralelo)              │
+│  ├─ Matrix: 7 microserviços em paralelo                 │
+│  ├─ Download Maven repository (com common-dtos)         │
+│  ├─ Build de cada microserviço                          │
+│  ├─ Execução de testes unitários                        │
+│  └─ Upload de JARs como artifacts                       │
+└────────────────────┬─────────────────────────────────────┘
+                     │
+                     ↓
+┌──────────────────────────────────────────────────────────┐
+│  Job 2: docker-build-push (~8 min - paralelo)           │
+│  ├─ Matrix: 7 imagens Docker em paralelo                │
+│  ├─ Checkout código                                      │
+│  ├─ Setup Docker Buildx                                  │
+│  ├─ Login Docker Hub                                     │
+│  ├─ Build imagem Docker                                  │
+│  ├─ Tag: latest, sha-{commit}                           │
+│  └─ Push para Docker Hub                                │
+└────────────────────┬─────────────────────────────────────┘
+                     │
+                     ↓
+┌──────────────────────────────────────────────────────────┐
+│  Job 3: notify-success (~5 seg)                         │
+│  └─ Mensagem de sucesso                                 │
+└──────────────────────────────────────────────────────────┘
 ```
+
+---
+
+### 🚀 Workflow Triggers
+
+| Evento | Descrição | Quando |
+|--------|-----------|--------|
+| **Push** | `push` to `main` | Código enviado para branch principal |
+| **Pull Request** | `pull_request` to `main` | PR aberto/atualizado |
+| **Manual** | `workflow_dispatch` | Execução manual via GitHub UI |
+
+### 📝 Configurações de Teste
+
+#### ms-database
+- **Profile de Teste:** `test`
+- **Database:** H2 (in-memory)
+- **RabbitMQ:** Mocked (ConnectionFactory + RabbitTemplate)
+- **Eureka:** Disabled
+- **Flyway:** Disabled
+
+```properties
+# application-test.properties
+spring.datasource.url=jdbc:h2:mem:testdb
+spring.jpa.hibernate.ddl-auto=create-drop
+spring.flyway.enabled=false
+eureka.client.enabled=false
+```
+
+#### Demais Microserviços
+- **Tests:** Spring Boot Test + JUnit 5
+- **Mocking:** Mockito para dependências externas
+- **Coverage:** Testes de contexto (context loads)
+
+### 📊 Monitoramento
+
+#### GitHub Actions Dashboard
+```
+https://github.com/ThallysCezar/Project-Ecommerce-Microsservices/actions
+```
+
+**Informações Disponíveis:**
+- ✅ Status de cada job (success/failure)
+- ✅ Tempo de execução de cada step
+- ✅ Logs detalhados de build/test
+- ✅ Artifacts gerados
+- ✅ Histórico de execuções
+
+#### Docker Hub Registry
+```
+https://hub.docker.com/u/thallyscezar
+```
+
+**Informações Disponíveis:**
+- ✅ Lista de todas as imagens
+- ✅ Tags disponíveis (latest, sha-*)
+- ✅ Data de upload
+- ✅ Tamanho das imagens
+- ✅ Pull count
+
+### 🔄 Fluxo de Desenvolvimento
+
+```
+Developer                GitHub Actions              Docker Hub
+    │                          │                         │
+    │ 1. git push origin main  │                         │
+    ├─────────────────────────►│                         │
+    │                          │                         │
+    │                          │ 2. Build & Test         │
+    │                          │    (15-20 min)          │
+    │                          │                         │
+    │                          │ 3. Docker Build         │
+    │                          ├────────────────────────►│
+    │                          │                         │
+    │                          │ 4. Push Images          │
+    │                          ├────────────────────────►│
+    │                          │    ✅ Success           │
+    │ 5. Notificação           │                         │
+    │◄─────────────────────────┤                         │
+    │                          │                         │
+    │ 6. kubectl apply         │                         │
+    │  (atualiza K8s)          │                         │
+    │                          │                         │
+```
+
+---
+
+### 🎯 Próximas Melhorias
+
+- [ ] Integração com SonarQube para análise de código
+- [ ] Code coverage reports
+- [ ] Trivy para scan de vulnerabilidades
+- [ ] Deploy automático para Kubernetes
+- [ ] Notificações Slack/Discord
+- [ ] Environments (staging/production)
+- [ ] Rollback automático em falhas
 
 ---
 
@@ -1120,6 +1274,7 @@ Cliente acessa a plataforma de e-commerce
 
 ### ✅ Concluído
 
+#### Arquitetura & Backend
 - [x] Arquitetura de microserviços
 - [x] Autenticação JWT
 - [x] Controle de acesso por roles
@@ -1131,24 +1286,9 @@ Cliente acessa a plataforma de e-commerce
 - [x] Documentação completa
 - [x] Swagger/OpenAPI documentation
 - [x] Docker Compose para ambiente completo
-- [x] Testes unitários e de integração (59 testes)
-- [x] **Kubernetes Deployment com K3d** ✅
-  - Manifests YAML completos (Namespace, ConfigMaps, Secrets)
-  - StatefulSets para PostgreSQL e RabbitMQ com PersistentVolumes
-  - Deployments para todos os microservices
-  - Health checks (TCP probes)
-  - Service Discovery via Eureka no cluster
-  - LoadBalancer para API Gateway
-  - Scripts PowerShell de automação (`start-ecommerce.ps1`, `stop-ecommerce.ps1`)
-  - Documentação completa de deploy e troubleshooting
-
-### 🔄 Em Progresso
-
-- [ ] **CI/CD Pipeline (GitHub Actions)** ⚠️ **[PRÓXIMO]**
-  - Integração Contínua (build, testes, code quality)
-  - Deploy Contínuo para Kubernetes
-  - Automação de releases e tags
-  - Build e push automático de imagens Docker
+- [x] Testes unitários e de integração
+- [x] Kubernetes Deployment com K3d
+- [x] CI/CD Pipeline (GitHub Actions)
 
 ### 📋 Próximas Funcionalidades
 
